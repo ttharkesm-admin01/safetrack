@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SafeTrack — รายงานตรวจอุปกรณ์ฉุกเฉิน</title>
+<script>
+/* Lazy-load pptxgenjs only when exporting (keeps file small for in-app browsers) */
+window.__loadPptx = function(){
+  return new Promise(function(resolve,reject){
+    if(window.PptxGenJS){resolve(window.PptxGenJS);return;}
+    var s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';
+    s.onload=function(){resolve(window.PptxGenJS);};
+    s.onerror=function(){reject(new Error('โหลดไลบรารีไม่สำเร็จ - ต้องมีอินเทอร์เน็ตตอนกดออก PowerPoint'));};
+    document.head.appendChild(s);
+  });
+};
+</script>
+<style>
+:root{
+  --bg:#0f1419; --panel:#1a212b; --panel2:#222c39; --line:#2c3744;
+  --txt:#e7edf3; --mut:#8a98a8; --accent:#ff6b35; --accent2:#1f9d6b;
+  --pass:#1f9d6b; --fail:#e0454e; --pend:#5a6878;
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto Sans Thai",system-ui,sans-serif;font-size:15px;line-height:1.5;padding-bottom:96px}
+.topbar{position:sticky;top:0;z-index:30;background:linear-gradient(180deg,#161d26,#131922);border-bottom:1px solid var(--line);padding:14px 16px;display:flex;align-items:center;gap:12px}
+.logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#ff9466);display:grid;place-items:center;font-weight:800;font-size:18px;color:#1a1206;flex-shrink:0}
+.topbar h1{font-size:17px;font-weight:700;letter-spacing:.2px}
+.topbar .sub{font-size:11.5px;color:var(--mut);font-weight:500}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 16px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 8px;text-align:center}
+.stat .n{font-size:21px;font-weight:800;line-height:1}
+.stat .l{font-size:10.5px;color:var(--mut);margin-top:4px}
+.stat.t .n{color:var(--txt)} .stat.p .n{color:var(--pass)} .stat.f .n{color:var(--fail)} .stat.w .n{color:var(--accent)}
+.bar{padding:0 16px 8px}
+.bar input{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--txt);padding:11px 14px;border-radius:11px;font-size:14px;font-family:inherit}
+.bar input::placeholder{color:var(--mut)}
+.cat{margin:8px 0}
+.cathead{padding:11px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line);position:sticky;top:67px;z-index:10}
+.cathead .ct{font-weight:700;font-size:13.5px;flex:1}
+.cathead .cn{font-size:11px;color:var(--mut);background:var(--panel2);padding:3px 9px;border-radius:20px}
+.cathead .chev{color:var(--mut);transition:transform .2s;font-size:12px}
+.cat.collapsed .chev{transform:rotate(-90deg)}
+.cat.collapsed .grid{display:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
+.card.done{border-color:var(--pass)}
+.card.issue{border-color:var(--fail)}
+.photo{aspect-ratio:1/.82;background:var(--panel2);position:relative;display:grid;place-items:center;cursor:pointer;overflow:hidden}
+.photo img{width:100%;height:100%;object-fit:cover}
+.photo .ph{color:var(--mut);font-size:12px;text-align:center;padding:8px}
+.photo .ph svg{display:block;margin:0 auto 6px}
+.photo .badge{position:absolute;top:6px;right:6px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;color:#fff}
+.cap{padding:9px 10px 10px}
+.cap .code{font-weight:800;font-size:13px;color:var(--accent)}
+.cap .ord{color:var(--mut);font-weight:600}
+.cap .loc{font-size:11.5px;color:var(--txt);margin-top:2px;min-height:15px}
+.controls{display:flex;gap:6px;margin-top:9px}
+.phactions{display:flex;gap:6px;margin-top:9px}
+.phactions button{flex:1;border:1px solid var(--line);background:var(--panel2);color:var(--txt);font-size:11.5px;font-weight:700;padding:7px 0;border-radius:9px;cursor:pointer;font-family:inherit}
+.phactions button.del{flex:0 0 34px;color:var(--fail);border-color:var(--fail)}
+.controls button{flex:1;border:1px solid var(--line);background:var(--panel2);color:var(--mut);font-size:11.5px;font-weight:700;padding:7px 0;border-radius:9px;cursor:pointer;font-family:inherit}
+.controls button.ap{background:var(--pass);border-color:var(--pass);color:#fff}
+.controls button.af{background:var(--fail);border-color:var(--fail);color:#fff}
+.note{width:100%;margin-top:7px;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:6px 9px;font-size:11.5px;font-family:inherit;resize:none}
+.fab{position:fixed;left:0;right:0;bottom:0;z-index:40;background:linear-gradient(180deg,transparent,var(--bg) 22%);padding:14px 16px;display:flex;gap:10px}
+.fab button{flex:1;border:none;border-radius:13px;padding:15px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.fab .exp{background:linear-gradient(135deg,var(--accent),#ff8a5c);color:#1a1206}
+.fab .more{background:var(--panel2);color:var(--txt);border:1px solid var(--line);flex:0 0 52px}
+.sheet{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);display:none;align-items:flex-end}
+.sheet.show{display:flex}
+.sheet .inner{background:var(--panel);width:100%;border-radius:20px 20px 0 0;padding:20px 18px 30px;border-top:1px solid var(--line)}
+.sheet h3{font-size:16px;margin-bottom:14px}
+.sheet .row{display:flex;gap:10px;margin-bottom:10px}
+.sheet button{flex:1;padding:13px;border-radius:11px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer}
+.sheet button.danger{color:var(--fail);border-color:var(--fail)}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#000;color:#fff;padding:11px 20px;border-radius:30px;font-size:13px;z-index:60;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90%;text-align:center}
+.toast.show{opacity:.95}
+.lightbox{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:20px}
+.lightbox.show{display:flex}
+.lightbox img{max-width:100%;max-height:100%;border-radius:10px}
+@media(min-width:560px){.grid{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div id="errbox" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#e0454e;color:#fff;padding:12px 14px;font-size:12.5px;font-family:monospace;white-space:pre-wrap;word-break:break-word;max-height:60vh;overflow:auto"></div>
+<script>
+(function(){
+  function showErr(msg){
+    var b=document.getElementById('errbox');
+    if(!b)return;
+    b.style.display='block';
+    b.textContent=(b.textContent?b.textContent+'\n\n':'')+msg;
+  }
+  window.onerror=function(message,source,lineno,colno,error){
+    showErr('JS ERROR: '+message+'\nline '+lineno+':'+colno+(error&&error.stack?'\n'+error.stack:''));
+    return false;
+  };
+  window.addEventListener('unhandledrejection',function(e){
+    showErr('PROMISE ERROR: '+(e.reason&&e.reason.message?e.reason.message:e.reason));
+  });
+  // also report the browser so we know the engine
+  window.addEventListener('DOMContentLoaded',function(){
+    setTimeout(function(){
+      var listEmpty=document.getElementById('list')&&document.getElementById('list').children.length===0;
+      var total=document.getElementById('s-total');
+      if(listEmpty || (total&&total.textContent==='0')){
+        showErr('วินิจฉัย: รายการว่าง\nUA: '+navigator.userAgent+'\nlist children: '+(document.getElementById('list')?document.getElementById('list').children.length:'no #list')+'\nTEMPLATE_DATA: '+(typeof window.TEMPLATE_DATA!=='undefined'?(window.TEMPLATE_DATA.length+' หมวด'):'undefined (ข้อมูลไม่โหลด)'));
+      }
+    },1500);
+  });
+})();
+</script>
+<div class="topbar">
+  <div class="logo">ST</div>
+  <div style="flex:1">
+    <h1>SafeTrack <span style="color:var(--mut);font-weight:500;font-size:13px">รายงานตรวจอุปกรณ์</span></h1>
+    <div class="sub">EF-SF-002 · ระบบบันทึก + ออกรายงาน PowerPoint</div>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat t"><div class="n" id="s-total">0</div><div class="l">ทั้งหมด</div></div>
+  <div class="stat p"><div class="n" id="s-pass">0</div><div class="l">ผ่าน</div></div>
+  <div class="stat f"><div class="n" id="s-fail">0</div><div class="l">ไม่ผ่าน</div></div>
+  <div class="stat w"><div class="n" id="s-photo">0</div><div class="l">มีรูป</div></div>
+</div>
+
+<div class="bar"><input id="search" placeholder="ค้นหา รหัส / ตำแหน่ง / ประเภท…"></div>
+
+<div id="list"></div>
+
+<div class="fab">
+  <button class="exp" id="btn-export">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="#1a1206" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    ออก PowerPoint
+  </button>
+  <button class="more" id="btn-more">⋯</button>
+</div>
+
+<div class="sheet" id="sheet">
+  <div class="inner">
+    <h3>ตัวเลือกเพิ่มเติม</h3>
+    <div class="row"><button id="opt-onlyphoto">เลือกออกเฉพาะจุดที่มีรูป</button></div>
+    <div class="row"><button id="opt-collapse">ยุบ/ขยายทุกหมวด</button></div>
+    <div class="row"><button id="opt-backup">สำรองข้อมูล (ดาวน์โหลด)</button><button id="opt-restore">กู้คืนข้อมูล</button></div>
+    <div class="row"><button class="danger" id="opt-clear">ล้างข้อมูลทั้งหมด</button></div>
+    <div class="row"><button id="opt-close">ปิด</button></div>
+    <input type="file" id="restore-file" accept="application/json" style="display:none">
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="lightbox" id="lightbox"><img id="lb-img"></div>
+
+<!-- persistent file inputs (must be in DOM for mobile browsers) -->
+<input type="file" id="file-gallery" accept="image/*" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden">
+<input type="file" id="file-camera" accept="image/*" capture="environment" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden">
+
+<script>
+window.TEMPLATE_DATA = [{"slide": 1, "category": "การตรวจสอบถังดับเพลิงชนิด เคมีแห้ง", "points": [{"order": "1", "code": "A-001", "location": "โรงพักขยะ 1"}, {"order": "2", "code": "A-002", "location": "โรงพักขยะ 2"}, {"order": "3", "code": "A-031", "location": "หน้าห้องน้ำชาย ชั้น 2 อาคารสำนักงาน"}, {"order": "4", "code": "A-032", "location": "ทางเดินไปห้องประชุม 2 อาคารสำนักงาน"}, {"order": "5", "code": "A-033", "location": "ชานพักบันไดทางขึ้นหอพัก 2"}, {"order": "6", "code": "A-034", "location": "ชั้น 2 หอพัก 2"}, {"order": "7", "code": "A-035", "location": "ชานพักบันไดทางขึ้น หอพัก 1"}, {"order": "8", "code": "A-036", "location": "ชั้น 2 หอพัก 1"}, {"order": "9", "code": "A-037", "location": "หน้าห้องประกอบอาหาร"}, {"order": "10", "code": "A-038", "location": "โรงอาหาร"}, {"order": "", "code": "B-004", "location": "หน้าห้องความปลอดภัย ตึกรวมมิตร"}, {"order": "", "code": "", "location": "โรงสเปรย์"}, {"order": "", "code": "", "location": "หน้าห้องพักลูกค้า"}]}, {"slide": 2, "category": "การตรวจสอบถังดับเพลิงชนิด น้ำยาเหลวระเหย", "points": [{"order": "2", "code": "B-013", "location": "ข้าง อสร. 1 ทางขึ้นหลังคา"}]}, {"slide": 3, "category": "การตรวจสอบถังดับเพลิงชนิด เคมีแห้ง", "points": [{"order": "1", "code": "C-003", "location": "บันไดทางขึ้นห้องประชุม 1 อาคารสำนักงาน"}, {"order": "2", "code": "C-004", "location": "หน้าห้องผู้จัดการทั่วไป อาคารสำนักงาน"}, {"order": "3", "code": "C-005", "location": "ประตูทางออกฝั่งลานจอดรถศูนย์ TPM"}, {"order": "4", "code": "C-006", "location": "ประตูทางออกฝั่งสนามบอลศูนย์ TPM"}, {"order": "", "code": "", "location": "ที่เก็บกอลกอฮอล์"}, {"order": "", "code": "", "location": "ข้างปั้มน้ำมันดีเซล 1"}, {"order": "", "code": "", "location": "ข้างปั้มน้ำมันดีเซล 2"}]}, {"slide": 4, "category": "การตรวจสอบถังดับเพลิงชนิด น้ำยาเหลวระเหย", "points": [{"order": "1", "code": "B-005", "location": "หน้าห้องประชุม ตึกเกษมสุข"}]}, {"slide": 5, "category": "การตรวจสอบ ตู้/สายฉีดน้ำดับเพลิง", "points": [{"order": "1", "code": "G-020", "location": "หลัง Meal Silo"}, {"order": "2", "code": "G-021", "location": "หลังโกดัง B1"}, {"order": "5", "code": "G-024", "location": "รั้วด้านหน้าโรงงาน"}, {"order": "3", "code": "G-022", "location": "หลังโกดัง K2"}, {"order": "4", "code": "G-023", "location": "ชั้น 2 บริเวณหอพัก 1"}, {"order": "6", "code": "G-025", "location": "โรงจอดรถหลังตึกบัญชี"}]}, {"slide": 6, "category": "การตรวจสอบ HOSE REEL", "points": [{"order": "1", "code": "H-006", "location": "ชานพักบันไดทางขึ้นห้องประชุม 1"}]}, {"slide": 7, "category": "การตรวจสอบ สัญญานแจ้งเหตุ", "points": [{"order": "", "code": "L-024", "location": "ประตูด้านหน้าศูนย์ TPM"}, {"order": "", "code": "L-027", "location": "หน้าห้องน้ำชั้นล่างอาคารสำนักงาน"}, {"order": "", "code": "L-047", "location": "ตึกรวมมิตร"}, {"order": "", "code": "", "location": "โรงอาหารใหม่"}, {"order": "", "code": "", "location": "โรงอาหารเก่า"}, {"order": "", "code": "", "location": "ห้องเก็บเอกสารบัญชี"}, {"order": "", "code": "", "location": "หอพัก 1 ชั้น 1"}, {"order": "", "code": "", "location": "หอพัก 1 ชั้น 2"}, {"order": "", "code": "L-025", "location": "หอพัก 1 ชั้น 2"}, {"order": "", "code": "L-026", "location": "หน้าตึกเกษมสุข"}, {"order": "", "code": "", "location": "หอพัก 2 ชั้น 2"}, {"order": "", "code": "", "location": "ข้างห้องเก็บของหลังโกดัง K3"}, {"order": "", "code": "", "location": "หน้าห้องออกกำลังกาย"}, {"order": "", "code": "", "location": "หน้าห้องญี่ปุ่น"}]}, {"slide": 8, "category": "การตรวจสอบ สัญญานแจ้งเหตุ", "points": [{"order": "", "code": "", "location": "ข้างโรงคัดแยก"}, {"order": "", "code": "", "location": "หน้าห้องเก็บของ ธุรการ ปุ่มฉุกเฉิน"}, {"order": "", "code": "", "location": "ประตูหลังศูนย์ TPM"}]}, {"slide": 9, "category": "การตรวจสอบ ไฟฉุกเฉิน", "points": [{"order": "1", "code": "F-010", "location": "โต๊ะเจ้าหน้าที่จัดซื้อ บริเวณตึกรวมมิตร"}, {"order": "4", "code": "F-013", "location": "ห้องบัญชีบริเวณอาคารสำนักงาน"}, {"order": "5", "code": "F-014", "location": "หน้าห้องกาแฟบริเวณอาคารสำนักงาน"}, {"order": "6", "code": "F-015", "location": "ในห้องประชุม 1 บริเวณอาคารสำนักงาน"}, {"order": "7", "code": "F-016", "location": "หน้าห้องพักรับรองบริเวณอาคารสำนักงาน"}, {"order": "8", "code": "F-017", "location": "ในห้องประชุม 2บริเวณอาคารสำนักงาน"}, {"order": "9", "code": "F-018", "location": "โต๊ะคุณศศิวิมล ก้อนเงิน บริเวณตึกเกษมสุข"}, {"order": "10", "code": "F-019", "location": "ห้องตาชั่ง บริเวณตึกเกษมสุข"}, {"order": "2", "code": "F-011", "location": "ห้องพยาบาล บริเวณตึกรวมมิตร"}, {"order": "3", "code": "F-012", "location": "หน้าตึกรวมมิตร"}, {"order": "11", "code": "F-020", "location": "ห้องจัดซื้อวัตถุดิบบริเวณตึกเกษมสุข"}, {"order": "12", "code": "F-021", "location": "ชานพักบันไดทางขึ้น หอพัก 2"}, {"order": "13", "code": "F-022", "location": "ชั้น 2 ตู้ยา หอพัก 1"}, {"order": "14", "code": "F-023", "location": "ประตูทางออกฝั่งลานจอดรถศูนย์ TPM"}]}, {"slide": 10, "category": "การตรวจสอบ ไฟฉุกเฉิน", "points": [{"order": "", "code": "", "location": "10"}, {"order": "15", "code": "F-024", "location": "ประตูทางออกฝั่งสนามบอลศูนย์ TPM"}, {"order": "16", "code": "F-025", "location": "ในห้องประกอบอาหาร"}, {"order": "17", "code": "F-026", "location": "หน้าห้องออกกำลังกาย"}, {"order": "18", "code": "F-027", "location": "ในห้องจัดเก็บอุปกรณ์ผจญเพลิง"}, {"order": "19", "code": "F-028", "location": "ด้านนอกฝั่งซ้ายห้องจัดเก็บอุปกรณ์ผจญเพลิง"}, {"order": "20", "code": "F-029", "location": "ด้านนอกฝั่งขวาห้องจัดเก็บอุปกรณ์ผจญเพลิง"}, {"order": "21", "code": "F-132", "location": "ห้อง TPM ทางเดิน ชั้น 2"}, {"order": "22", "code": "F-133", "location": "ห้อง TPM อบรม 1"}, {"order": "23", "code": "F-134", "location": "ห้อง TPM อบรม 2"}, {"order": "24", "code": "F-135", "location": "หอพักเก่าหน้าห้องเบอร์ 1"}, {"order": "25", "code": "F-136", "location": "หอพักเก่าหน้าห้องเบอร์10"}, {"order": "26", "code": "F-137", "location": "หอพักเก่า ชั้น 1"}, {"order": "27", "code": "F-138", "location": "หอพักใหม่ ชั้น1"}, {"order": "28", "code": "F-139", "location": "หอพักใหม่ ชั้น 2"}]}, {"slide": 11, "category": "การตรวจสอบ ไฟฉุกเฉิน", "points": [{"order": "30", "code": "F-141", "location": "โรงอาหาร"}, {"order": "", "code": "", "location": "11"}, {"order": "29", "code": "F-140", "location": "ห้องออกกำลังกาย"}]}, {"slide": 12, "category": "การตรวจสอบ จุดล้างตา", "points": [{"order": "", "code": "", "location": "จุดเก็บถังแอลกอฮอล์"}, {"order": "", "code": "", "location": "12"}, {"order": "", "code": "K-005", "location": "ข้างโรงสเปรย์"}, {"order": "1", "code": "", "location": "โรงพักขยะ"}, {"order": "2", "code": "", "location": "โกดัง K3 ประตู 8"}]}, {"slide": 13, "category": "การตรวจสอบ ป้ายทางหนีไฟ", "points": [{"order": "", "code": "", "location": "13"}, {"order": "1", "code": "Q-001", "location": "ประตูทางออกบ่อปลา สำนักงาน"}, {"order": "4", "code": "Q-004", "location": "ประตูทางออกห้องประชุม 2"}, {"order": "5", "code": "Q-005", "location": "ประตูทางออกห้องประชุม 1"}, {"order": "6", "code": "Q-006", "location": "เพดานหน้าห้องน้ำหญิง ชั้น 2"}, {"order": "7", "code": "Q-007", "location": "ประตูทางออก ตึกรวมมิตร"}, {"order": "8", "code": "Q-008", "location": "ประตูทางออกห้องพยาบาล"}, {"order": "9", "code": "Q-009", "location": "ประตูทางออกห้องจัดซื้อวัตถุดิบ"}, {"order": "10", "code": "Q-010", "location": "ประตูทางออกห้องตาชั่ง"}, {"order": "2", "code": "Q-002", "location": "คานทางลงบันได อาคารสำนักงาน"}, {"order": "3", "code": "Q-003", "location": "ประตูทางออกฝั่งห้องน้ำ"}, {"order": "11", "code": "Q-011", "location": "ประตูทางออกตึกเกษมสุข"}, {"order": "14", "code": "Q-014", "location": "ประตูทางออกศูนย์ TPM ฝั่งสนาม"}, {"order": "12", "code": "Q-012", "location": "ประตูทางออกโรงอาหาร"}, {"order": "13", "code": "Q-013", "location": "ประตูทางออกศูนย์ TPM ฝั่งลานจอด"}]}, {"slide": 14, "category": "การตรวจสอบ ป้ายทางหนีไฟ", "points": [{"order": "", "code": "", "location": "14"}, {"order": "15", "code": "Q-015", "location": "ประตูทางออกห้อง WALL ROOM"}, {"order": "16", "code": "Q-016", "location": "หอพัก 1 ชั้น 1"}, {"order": "17", "code": "Q-017", "location": "หอพัก 1 ชั้น 1"}, {"order": "18", "code": "Q-018", "location": "หอพัก 1 ชั้น 2"}, {"order": "19", "code": "Q-019", "location": "หอพัก 2 ชั้น 2"}, {"order": "20", "code": "Q-020", "location": "หอพัก 2ชั้น 2"}, {"order": "21", "code": "", "location": "หอพัก 1 ชั้น 2 จุดที่ 2"}, {"order": "22", "code": "", "location": "หอพัก 2 ชั้น 2 จุดที่ 2"}]}, {"slide": 15, "category": "การตรวจสอบ Heat Detector/Smoke Detector โรงอาหารใหม่", "points": [{"order": "", "code": "", "location": "15"}, {"order": "1", "code": "N-001", "location": ""}, {"order": "2", "code": "N-002", "location": ""}, {"order": "1", "code": "M-001", "location": ""}, {"order": "2", "code": "M-002", "location": ""}]}, {"slide": 16, "category": "การตรวจสอบ Smoke Detector โรงอาหารเก่า", "points": [{"order": "", "code": "", "location": "16"}, {"order": "5", "code": "M-003", "location": ""}, {"order": "6", "code": "M-004", "location": ""}]}, {"slide": 17, "category": "การตรวจสอบ Smoke Detector ตึกรวมมิตร", "points": [{"order": "", "code": "", "location": "17"}, {"order": "1", "code": "M-005", "location": "แจ้งคิว"}, {"order": "2", "code": "M-006", "location": "รับแขก"}, {"order": "3", "code": "M-007", "location": "จัดซื้อพัสดุ"}, {"order": "4", "code": "M-008", "location": "พยาบาล"}, {"order": "8", "code": "", "location": "M -012 บุคคล"}, {"order": "9", "code": "M-013", "location": "ทางเดิน"}, {"order": "10", "code": "M-014", "location": "จป."}, {"order": "11", "code": "M-015", "location": "ชุมสาย"}, {"order": "5", "code": "M-009", "location": "ร้านค้า"}, {"order": "6", "code": "M-010", "location": "เก็บของ"}, {"order": "7", "code": "M-011", "location": "ธุรการ"}]}, {"slide": 18, "category": "การตรวจสอบ Smoke Detector ศูนย์พัฒนาคน TPM ชั้น 1", "points": [{"order": "", "code": "", "location": "18"}, {"order": "1", "code": "M-019", "location": ""}, {"order": "2", "code": "M-020", "location": ""}, {"order": "3", "code": "M-021", "location": ""}, {"order": "1", "code": "M-016", "location": ""}, {"order": "2", "code": "M-017", "location": ""}, {"order": "3", "code": "M-018", "location": ""}, {"order": "85", "code": "M-085", "location": ""}]}, {"slide": 19, "category": "การตรวจสอบ Smoke Detector โกดังเก็บของหลังโกดัง K3", "points": [{"order": "", "code": "", "location": "19"}, {"order": "1", "code": "", "location": "M -022"}, {"order": "4", "code": "M-023", "location": ""}]}, {"slide": 20, "category": "การตรวจสอบ Smoe Detector ตึกเกษมสุข", "points": [{"order": "", "code": "", "location": "20"}, {"order": "1", "code": "M-024", "location": "ห้องครัว"}, {"order": "2", "code": "M-025", "location": "ห้องประชุม"}, {"order": "3", "code": "M-026", "location": "โถง 1"}, {"order": "5", "code": "M-028", "location": "โถง 3"}, {"order": "6", "code": "M-029", "location": "ห้องตาชั่ง"}, {"order": "4", "code": "M-027", "location": "โถง 2"}, {"order": "7", "code": "M-030", "location": "เปิดใบรับ"}, {"order": "8", "code": "M-031", "location": "จัดซื้อวัตถุดิบ"}]}, {"slide": 21, "category": "การตรวจสอบ Smoke Detector ตึกบริหารชั้น 1", "points": [{"order": "", "code": "", "location": "21"}, {"order": "1", "code": "", "location": "M -032 หน้าห้องน้ำ"}, {"order": "2", "code": "M-033", "location": "โถง 1"}, {"order": "3", "code": "M-034", "location": "โถ ง 2"}, {"order": "4", "code": "M-035", "location": "บัญชี"}, {"order": "5", "code": "M-036", "location": "ห้องบัญชี"}, {"order": "6", "code": "M-036", "location": "ห้อง GM"}, {"order": "7", "code": "M-038", "location": "ห้อง DC Server"}, {"order": "8", "code": "M-039", "location": "ห้อง AVP"}]}, {"slide": 22, "category": "การตรวจสอบ Smoke Detector ตึกบริหารชั้น 2", "points": [{"order": "", "code": "", "location": "22"}]}, {"slide": 23, "category": "การตรวจสอบ Smoke Detector ตึกบริหารชั้น 2", "points": [{"order": "", "code": "", "location": "23"}, {"order": "1", "code": "M-040", "location": "ห้องเตรียมฯ"}, {"order": "2", "code": "M-041", "location": "ห้องประชุม1"}, {"order": "3", "code": "M-042", "location": "ห้องประชุม1 # 1"}, {"order": "4", "code": "M-043", "location": "ห้องประชุม1 # 2"}, {"order": "5", "code": "M-044", "location": "ห้องประชุม1 # 3"}, {"order": "6", "code": "M-045", "location": "ห้องนอน AVP"}, {"order": "7", "code": "M-46", "location": "ทางเดิน #1"}, {"order": "8", "code": "M-047", "location": "ทางเดิน #2"}, {"order": "14", "code": "M-053", "location": "ห้องเก็บของฯ"}, {"order": "9", "code": "M-048", "location": "ห้องประชุม2 # 1"}, {"order": "10", "code": "M-049", "location": "ห้องประชุม2 # 2"}, {"order": "11", "code": "M-050", "location": "ห้องประชุม2 # 3"}, {"order": "12", "code": "M-051", "location": "ห้อง CSR"}, {"order": "13", "code": "M-052", "location": "ห้องสารบรรณฯ"}]}, {"slide": 24, "category": "การตรวจสอบ Smoke Detector โรงพักขยะ", "points": [{"order": "", "code": "", "location": "24"}, {"order": "1", "code": "N-003", "location": "ห้องขยะทั่วไป"}, {"order": "2", "code": "N-004", "location": "ขยะอันตราย1"}, {"order": "3", "code": "N-005", "location": "ขยะอันตราย2"}, {"order": "4", "code": "N-006", "location": "ขยะอันตราย3"}, {"order": "5", "code": "N-007", "location": "ขยะอันตราย4"}]}, {"slide": 25, "category": "การตรวจสอบ Smoke Detector หอพักเก่าชั้น 1", "points": [{"order": "", "code": "", "location": "25"}, {"order": "11", "code": "M-054", "location": "ห้องเบอร์ 11"}, {"order": "12", "code": "M-055", "location": "ห้องเบอร์ 11"}, {"order": "13", "code": "M-056", "location": "ห้องเบอร์ 12"}, {"order": "14", "code": "M-057", "location": "ห้องเบอร์ 13"}, {"order": "15", "code": "M-058", "location": "ห้องเบอร์ 14"}, {"order": "16", "code": "M-059", "location": "ห้องเบอร์ 15"}, {"order": "17", "code": "M-060", "location": "ห้องเบอร์ 16"}, {"order": "18", "code": "M-061", "location": "ห้องเบอร์ 17"}, {"order": "19", "code": "M-062", "location": "ห้องเบอร์ 18"}, {"order": "20", "code": "M-063", "location": "ห้องเบอร์ 19"}, {"order": "22", "code": "M-065", "location": "ห้องเก็บของ"}, {"order": "21", "code": "M-064", "location": "ห้องเบอร์ 19"}]}, {"slide": 26, "category": "การตรวจสอบ Smoke Detector ห้องพักเก่าชั้น 2", "points": [{"order": "", "code": "", "location": "26"}, {"order": "1", "code": "M-066", "location": "ห้องเบอร์ 1"}, {"order": "2", "code": "M-067", "location": "ห้องเบอร์ 2"}, {"order": "3", "code": "M-068", "location": "ห้องเบอร์ 3"}, {"order": "4", "code": "M-069", "location": "ห้องเบอร์ 4"}, {"order": "5", "code": "M-070", "location": "ห้องเบอร์ 5"}, {"order": "6", "code": "M-071", "location": "ห้องเบอร์ 6"}, {"order": "7", "code": "M-072", "location": "ห้องเบอร์ 7"}, {"order": "8", "code": "M-073", "location": "ห้องเบอร์ 8"}, {"order": "9", "code": "M-074", "location": "ห้องเบอร์ 9"}, {"order": "10", "code": "M-075", "location": "ห้องเบอร์ 10"}]}, {"slide": 27, "category": "การตรวจสอบ Smoke Detector หอพักใหม่", "points": [{"order": "", "code": "", "location": "27"}, {"order": "1", "code": "M-076", "location": "ห้องเบอร์ 1"}, {"order": "2", "code": "M-077", "location": "ห้องเบอร์ 2"}, {"order": "3", "code": "M-078", "location": "ห้องเบอร์ 3"}, {"order": "4", "code": "M-079", "location": "ห้องเบอร์ 4"}, {"order": "5", "code": "M-080", "location": "ห้องเบอร์ 5"}, {"order": "5", "code": "M-81", "location": "ห้องเบอร์ 6"}]}, {"slide": 28, "category": "การตรวจสอบ Smoke Detector ห้องเก็บเอกสาร", "points": [{"order": "", "code": "", "location": "28"}, {"order": "1", "code": "M-082", "location": "บัญชี"}, {"order": "2", "code": "M-083", "location": "ขายหน้าร้าน"}, {"order": "7", "code": "M-084", "location": "ห้องออกกำลังกาย"}, {"order": "8", "code": "N-008", "location": "ห้องครัว"}]}];
+</script>
+<script>
+const LS_KEY='safetrack_ef002_v1';
+// Safe storage: in-app browsers (CPF Connext, LINE, etc.) may block localStorage.
+// Fall back to in-memory so the app always loads and works.
+var memStore={};
+var STORAGE_OK=false;
+(function(){try{var t='__t';window.localStorage.setItem(t,'1');window.localStorage.removeItem(t);STORAGE_OK=true;}catch(e){STORAGE_OK=false;}})();
+function lsGet(k){try{if(STORAGE_OK)return window.localStorage.getItem(k);}catch(e){}return (k in memStore)?memStore[k]:null;}
+function lsSet(k,v){try{if(STORAGE_OK){window.localStorage.setItem(k,v);return;}}catch(e){}memStore[k]=v;}
+let state={};
+try{state=JSON.parse(lsGet(LS_KEY)||'{}');}catch(e){state={};}
+let onlyPhotoExport=false;
+
+function uid(si,pi){return 's'+si+'p'+pi}
+function save(){lsSet(LS_KEY,JSON.stringify(state))}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200)}
+
+function render(){
+  const q=(document.getElementById('search').value||'').toLowerCase().trim();
+  const list=document.getElementById('list');list.innerHTML='';
+  let tot=0,pass=0,fail=0,photo=0;
+  TEMPLATE_DATA.forEach((cat,si)=>{
+    const matchPts=cat.points.map((p,pi)=>({p,pi})).filter(({p})=>{
+      if(!q)return true;
+      return (p.code+' '+p.location+' '+cat.category).toLowerCase().includes(q);
+    });
+    cat.points.forEach((p,pi)=>{
+      tot++;const st=state[uid(si,pi)]||{};
+      if(st.result==='pass')pass++;if(st.result==='fail')fail++;if(st.photo)photo++;
+    });
+    if(matchPts.length===0)return;
+    const wrap=document.createElement('div');wrap.className='cat';wrap.dataset.si=si;
+    wrap.innerHTML='<div class="cathead"><span class="chev">▼</span><span class="ct">'+cat.category+'</span><span class="cn">'+cat.points.length+' จุด</span></div><div class="grid"></div>';
+    const grid=wrap.querySelector('.grid');
+    matchPts.forEach(({p,pi})=>{
+      const id=uid(si,pi);const st=state[id]||{};
+      const card=document.createElement('div');
+      card.className='card'+(st.result==='fail'?' issue':(st.photo&&st.result?' done':''));
+      const ordTxt=p.order?('<span class="ord">'+p.order+'. </span>'):'';
+      const codeTxt=p.code?p.code:'(ไม่มีรหัส)';
+      const badge=st.result?('<span class="badge" style="background:'+(st.result==='pass'?'var(--pass)':'var(--fail)')+'">'+(st.result==='pass'?'ผ่าน':'ไม่ผ่าน')+'</span>'):'';
+      card.innerHTML=
+        '<div class="photo" data-act="'+(st.photo?'view':'gallery')+'" data-id="'+id+'">'+
+          (st.photo?('<img src="'+st.photo+'">'+badge):
+            ('<div class="ph"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M3 8a2 2 0 012-2h2l1.5-2h7L18 6h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" stroke="#5a6878" stroke-width="1.6"/><circle cx="12" cy="12.5" r="3.2" stroke="#5a6878" stroke-width="1.6"/></svg>แตะเพื่อเลือกรูป</div>'))+
+        '</div>'+
+        '<div class="cap">'+
+          '<div class="code">'+ordTxt+codeTxt+'</div>'+
+          '<div class="loc">'+(p.location||'—')+'</div>'+
+          '<div class="phactions">'+
+            '<button data-act="gallery" data-id="'+id+'">📁 เลือกรูป</button>'+
+            '<button data-act="camera" data-id="'+id+'">📷 ถ่าย</button>'+
+            (st.photo?'<button data-act="delphoto" data-id="'+id+'" class="del">✕</button>':'')+
+          '</div>'+
+          '<div class="controls">'+
+            '<button data-act="pass" data-id="'+id+'" class="'+(st.result==='pass'?'ap':'')+'">ผ่าน</button>'+
+            '<button data-act="fail" data-id="'+id+'" class="'+(st.result==='fail'?'af':'')+'">ไม่ผ่าน</button>'+
+          '</div>'+
+          '<textarea class="note" rows="1" placeholder="หมายเหตุ…" data-act="note" data-id="'+id+'">'+(st.note||'')+'</textarea>'+
+        '</div>';
+      grid.appendChild(card);
+    });
+    list.appendChild(wrap);
+  });
+  document.getElementById('s-total').textContent=tot;
+  document.getElementById('s-pass').textContent=pass;
+  document.getElementById('s-fail').textContent=fail;
+  document.getElementById('s-photo').textContent=photo;
+}
+
+// delegated events
+document.getElementById('list').addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');if(!el)return;
+  const act=el.dataset.act,id=el.dataset.id;
+  if(act==='gallery'){pickPhoto(id,false);}
+  else if(act==='camera'){pickPhoto(id,true);}
+  else if(act==='view'){const st=state[id];if(st&&st.photo){document.getElementById('lb-img').src=st.photo;document.getElementById('lightbox').classList.add('show');}}
+  else if(act==='delphoto'){if(confirm('ลบรูปนี้?')){state[id]=state[id]||{};delete state[id].photo;save();render();}}
+  else if(act==='pass'||act==='fail'){
+    state[id]=state[id]||{};
+    state[id].result=(state[id].result===act)?null:act;
+    save();render();
+  }
+});
+document.getElementById('list').addEventListener('click',e=>{
+  const h=e.target.closest('.cathead');if(!h)return;
+  if(e.target.closest('[data-act]'))return;
+  h.parentElement.classList.toggle('collapsed');
+});
+document.getElementById('list').addEventListener('input',e=>{
+  const el=e.target.closest('[data-act="note"]');if(!el)return;
+  const id=el.dataset.id;state[id]=state[id]||{};state[id].note=el.value;save();
+});
+document.getElementById('lightbox').addEventListener('click',()=>document.getElementById('lightbox').classList.remove('show'));
+
+let pendingId=null;
+function handleFile(inp){
+  const f=inp.files&&inp.files[0];
+  inp.value=''; // reset so picking same file again works
+  if(!f||!pendingId)return;
+  const id=pendingId;pendingId=null;
+  toast('กำลังประมวลผลรูป…');
+  resizeImage(f,1200,.82,dataUrl=>{state[id]=state[id]||{};state[id].photo=dataUrl;save();render();toast('บันทึกรูปแล้ว');});
+}
+document.getElementById('file-gallery').addEventListener('change',function(){handleFile(this);});
+document.getElementById('file-camera').addEventListener('change',function(){handleFile(this);});
+
+function pickPhoto(id,useCamera){
+  pendingId=id;
+  document.getElementById(useCamera?'file-camera':'file-gallery').click();
+}
+function resizeImage(file,maxW,quality,cb){
+  const img=new Image();const rd=new FileReader();
+  rd.onload=()=>{img.onload=()=>{
+    let w=img.width,h=img.height;if(w>maxW){h=h*maxW/w;w=maxW;}
+    const c=document.createElement('canvas');c.width=w;c.height=h;
+    c.getContext('2d').drawImage(img,0,0,w,h);
+    cb(c.toDataURL('image/jpeg',quality));
+  };img.src=rd.result;};
+  rd.readAsDataURL(file);
+}
+
+document.getElementById('search').addEventListener('input',render);
+
+// sheet
+const sheet=document.getElementById('sheet');
+document.getElementById('btn-more').onclick=()=>sheet.classList.add('show');
+document.getElementById('opt-close').onclick=()=>sheet.classList.remove('show');
+sheet.addEventListener('click',e=>{if(e.target===sheet)sheet.classList.remove('show')});
+document.getElementById('opt-collapse').onclick=()=>{
+  const cats=[...document.querySelectorAll('.cat')];
+  const anyOpen=cats.some(c=>!c.classList.contains('collapsed'));
+  cats.forEach(c=>c.classList.toggle('collapsed',anyOpen));sheet.classList.remove('show');
+};
+document.getElementById('opt-onlyphoto').onclick=()=>{onlyPhotoExport=!onlyPhotoExport;toast(onlyPhotoExport?'จะออกเฉพาะจุดที่มีรูป':'จะออกทุกจุด');sheet.classList.remove('show');};
+document.getElementById('opt-clear').onclick=()=>{if(confirm('ล้างข้อมูลและรูปทั้งหมด?')){state={};save();render();sheet.classList.remove('show');toast('ล้างข้อมูลแล้ว');}};
+document.getElementById('opt-backup').onclick=()=>{
+  const blob=new Blob([JSON.stringify(state)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='safetrack-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();sheet.classList.remove('show');
+};
+document.getElementById('opt-restore').onclick=()=>document.getElementById('restore-file').click();
+document.getElementById('restore-file').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{try{state=JSON.parse(rd.result);save();render();toast('กู้คืนข้อมูลแล้ว');sheet.classList.remove('show');}catch(err){toast('ไฟล์ไม่ถูกต้อง');}};
+  rd.readAsText(f);
+};
+
+// ====== EXPORT POWERPOINT ======
+document.getElementById('btn-export').onclick=async function(){
+  const btn=this;btn.disabled=true;const orig=btn.innerHTML;btn.innerHTML='กำลังสร้าง…';
+  try{
+    btn.innerHTML='กำลังโหลด…';
+    const PGJS = await window.__loadPptx();
+    if(!PGJS){throw new Error('ไลบรารี PowerPoint ยังไม่พร้อม');}
+    btn.innerHTML='กำลังสร้าง…';
+    const pptx=new PGJS();
+    pptx.defineLayout({name:'W',width:13.333,height:7.5});
+    pptx.layout='W';
+    const PER=14, COLS=7, ROWS=2;
+    const PW=1.78, PH=1.65;          // photo size (in)
+    const GAPX=(13.333-0.14-COLS*PW)/(COLS-1); // distribute
+    const x0=0.07, yTop=1.77, yBot=4.10;
+    const rowY=[yTop,yBot];
+    let pageNo=0;
+    TEMPLATE_DATA.forEach(cat=>{
+      let pts=cat.points.map((p,pi)=>({p,pi}));
+      if(onlyPhotoExport)pts=pts.filter(({p},i)=>true); // filter below by photo
+      // build list of points to include
+      const items=cat.points.map((p,pi)=>({p,st:state['s'+TEMPLATE_DATA.indexOf(cat)+'p'+pi]||{}}))
+        .filter(it=> onlyPhotoExport ? !!it.st.photo : true);
+      if(items.length===0 && onlyPhotoExport) return;
+      for(let off=0; off<Math.max(items.length,1); off+=PER){
+        const chunk=items.slice(off,off+PER);
+        pageNo++;
+        const s=pptx.addSlide();
+        s.background={color:'FFFFFF'};
+        s.addText('รายงานผลการดำเนินงานงานหน่วยงาน',{x:0.44,y:0.10,w:12.45,h:0.55,fontSize:24,bold:true,align:'center',color:'1a212b',fontFace:'Angsana New'});
+        s.addText(cat.category,{x:0.44,y:0.75,w:12.45,h:0.7,fontSize:26,bold:true,align:'center',color:'c0392b',fontFace:'Angsana New'});
+        s.addText(String(pageNo),{x:11.8,y:6.95,w:1.2,h:0.4,fontSize:14,bold:true,align:'right',color:'333333'});
+        chunk.forEach((it,k)=>{
+          const col=k%COLS, row=Math.floor(k/COLS);
+          const x=x0+col*(PW+GAPX), y=rowY[row];
+          if(it.st.photo){
+            s.addImage({data:it.st.photo,x:x,y:y,w:PW,h:PH});
+          }else{
+            s.addShape(pptx.ShapeType.rect,{x:x,y:y,w:PW,h:PH,fill:{color:'F0F0F0'},line:{color:'BBBBBB',width:1}});
+            s.addText('(ใส่รูปภาพ)',{x:x,y:y+PH/2-0.2,w:PW,h:0.4,fontSize:11,align:'center',color:'999999'});
+          }
+          const ordTxt=it.p.order?(it.p.order+'. '):'';
+          const cap=ordTxt+(it.p.code?it.p.code:'')+(it.p.code&&it.p.location?'\n':'')+(it.p.location||'');
+          s.addText(cap,{x:x-0.06,y:y+PH+0.02,w:PW+0.12,h:0.55,fontSize:12,align:'center',valign:'top',color:'1a212b',fontFace:'Angsana New',bold:true,lineSpacing:13});
+        });
+      }
+    });
+    const fname='รายงานอุปกรณ์ฉุกเฉิน-'+new Date().toISOString().slice(0,10)+'.pptx';
+    await pptx.writeFile({fileName:fname});
+    toast('สร้าง PowerPoint สำเร็จ ('+pageNo+' สไลด์)');
+  }catch(err){console.error(err);toast('เกิดข้อผิดพลาด: '+err.message);}
+  finally{btn.disabled=false;btn.innerHTML=orig;}
+};
+
+try{
+  render();
+  if(!STORAGE_OK){
+    var w=document.createElement('div');
+    w.style.cssText='background:#3a2e12;color:#ffcf66;padding:10px 16px;font-size:12px;border-bottom:1px solid #5a4718;line-height:1.4';
+    w.innerHTML='⚠️ ตัวเปิดนี้ไม่อนุญาตให้บันทึกถาวร — ข้อมูล/รูปจะหายเมื่อปิดหน้านี้ แนะนำให้เปิดด้วย Safari หรือ Chrome และกด “สำรองข้อมูล” ในเมนู ⋯ ก่อนปิด';
+    var bar=document.querySelector('.bar');
+    bar.parentNode.insertBefore(w,bar);
+  }
+}catch(err){
+  document.getElementById('list').innerHTML='<div style="padding:30px 16px;color:#e0454e;font-size:14px">เกิดข้อผิดพลาดในการแสดงรายการ:<br>'+err.message+'</div>';
+  console.error(err);
+}
+</script>
+</body>
+</html>
