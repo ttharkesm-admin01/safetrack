@@ -42,6 +42,8 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
 .cathead{padding:11px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line);position:sticky;top:67px;z-index:10}
 .cathead .ct{font-weight:700;font-size:13.5px;flex:1}
 .cathead .cn{font-size:11px;color:var(--mut);background:var(--panel2);padding:3px 9px;border-radius:20px}
+.cathead .cn-ok{color:#fff;background:var(--pass)}
+.cathead .cn-bad{color:#fff;background:var(--fail)}
 .cathead .chev{color:var(--mut);transition:transform .2s;font-size:12px}
 .cat.collapsed .chev{transform:rotate(-90deg)}
 .cat.collapsed .grid{display:none}
@@ -124,8 +126,8 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
 
 <div class="stats">
   <div class="stat t"><div class="n" id="s-total">0</div><div class="l">ทั้งหมด</div></div>
-  <div class="stat p"><div class="n" id="s-pass">0</div><div class="l">ผ่าน</div></div>
-  <div class="stat f"><div class="n" id="s-fail">0</div><div class="l">ไม่ผ่าน</div></div>
+  <div class="stat p"><div class="n" id="s-pass">0</div><div class="l">ปกติ</div></div>
+  <div class="stat f"><div class="n" id="s-fail">0</div><div class="l">ไม่ปกติ</div></div>
   <div class="stat w"><div class="n" id="s-photo">0</div><div class="l">มีรูป</div></div>
 </div>
 
@@ -189,13 +191,16 @@ function render(){
       if(!q)return true;
       return (p.code+' '+p.location+' '+cat.category).toLowerCase().includes(q);
     });
+    let cOk=0,cBad=0;
     cat.points.forEach((p,pi)=>{
       tot++;const st=state[uid(si,pi)]||{};
-      if(st.result==='pass')pass++;if(st.result==='fail')fail++;if(st.photo)photo++;
+      if(st.result==='pass'){pass++;cOk++;}if(st.result==='fail'){fail++;cBad++;}if(st.photo)photo++;
     });
     if(matchPts.length===0)return;
     const wrap=document.createElement('div');wrap.className='cat';wrap.dataset.si=si;
-    wrap.innerHTML='<div class="cathead"><span class="chev">▼</span><span class="ct">'+cat.category+'</span><span class="cn">'+cat.points.length+' จุด</span></div><div class="grid"></div>';
+    const okPill=cOk>0?('<span class="cn cn-ok">ปกติ '+cOk+'</span>'):'';
+    const badPill=cBad>0?('<span class="cn cn-bad">ไม่ปกติ '+cBad+'</span>'):'';
+    wrap.innerHTML='<div class="cathead"><span class="chev">▼</span><span class="ct">'+cat.category+'</span>'+okPill+badPill+'<span class="cn">'+cat.points.length+' จุด</span></div><div class="grid"></div>';
     const grid=wrap.querySelector('.grid');
     matchPts.forEach(({p,pi})=>{
       const id=uid(si,pi);const st=state[id]||{};
@@ -203,7 +208,7 @@ function render(){
       card.className='card'+(st.result==='fail'?' issue':(st.photo&&st.result?' done':''));
       const ordTxt=p.order?('<span class="ord">'+p.order+'. </span>'):'';
       const codeTxt=p.code?p.code:'(ไม่มีรหัส)';
-      const badge=st.result?('<span class="badge" style="background:'+(st.result==='pass'?'var(--pass)':'var(--fail)')+'">'+(st.result==='pass'?'ผ่าน':'ไม่ผ่าน')+'</span>'):'';
+      const badge=st.result?('<span class="badge" style="background:'+(st.result==='pass'?'var(--pass)':'var(--fail)')+'">'+(st.result==='pass'?'ปกติ':'ไม่ปกติ')+'</span>'):'';
       card.innerHTML=
         '<div class="photo" data-act="'+(st.photo?'view':'gallery')+'" data-id="'+id+'">'+
           (st.photo?('<img src="'+st.photo+'">'+badge):
@@ -218,8 +223,8 @@ function render(){
             (st.photo?'<button data-act="delphoto" data-id="'+id+'" class="del">✕</button>':'')+
           '</div>'+
           '<div class="controls">'+
-            '<button data-act="pass" data-id="'+id+'" class="'+(st.result==='pass'?'ap':'')+'">ผ่าน</button>'+
-            '<button data-act="fail" data-id="'+id+'" class="'+(st.result==='fail'?'af':'')+'">ไม่ผ่าน</button>'+
+            '<button data-act="pass" data-id="'+id+'" class="'+(st.result==='pass'?'ap':'')+'">ปกติ</button>'+
+            '<button data-act="fail" data-id="'+id+'" class="'+(st.result==='fail'?'af':'')+'">ไม่ปกติ</button>'+
           '</div>'+
           '<textarea class="note" rows="1" placeholder="หมายเหตุ…" data-act="note" data-id="'+id+'">'+(st.note||'')+'</textarea>'+
         '</div>';
@@ -327,6 +332,60 @@ document.getElementById('btn-export').onclick=async function(){
     const x0=0.07, yTop=1.77, yBot=4.10;
     const rowY=[yTop,yBot];
     let pageNo=0;
+
+    // ===== SUMMARY TABLE SLIDE (first page) =====
+    pageNo++;
+    const sum=pptx.addSlide();
+    sum.background={color:'FFFFFF'};
+    sum.addText('รายงานผลการดำเนินงานงานหน่วยงาน',{x:0.44,y:0.10,w:12.45,h:0.55,fontSize:24,bold:true,align:'center',color:'1a212b',fontFace:'Angsana New'});
+    sum.addText('สรุปผลการตรวจสอบอุปกรณ์ความปลอดภัยและอุปกรณ์ฉุกเฉิน (EF-SF-002)',{x:0.44,y:0.72,w:12.45,h:0.6,fontSize:22,bold:true,align:'center',color:'c0392b',fontFace:'Angsana New'});
+    sum.addText(String(pageNo),{x:11.8,y:6.95,w:1.2,h:0.4,fontSize:14,bold:true,align:'right',color:'333333'});
+
+    // build rows: one per category, count ปกติ/ไม่ปกติ, collect ไม่ปกติ notes
+    const headFill={color:'FF0000'};
+    const rows=[[
+      {text:'อุปกรณ์ที่ตรวจ',options:{bold:true,color:'FFFFFF',fill:headFill,align:'center',valign:'middle',fontFace:'Angsana New',fontSize:16}},
+      {text:'จำนวนที่มี',options:{bold:true,color:'FFFFFF',fill:headFill,align:'center',valign:'middle',fontFace:'Angsana New',fontSize:16}},
+      {text:'ปกติ',options:{bold:true,color:'FFFFFF',fill:headFill,align:'center',valign:'middle',fontFace:'Angsana New',fontSize:16}},
+      {text:'ไม่ปกติ',options:{bold:true,color:'FFFFFF',fill:headFill,align:'center',valign:'middle',fontFace:'Angsana New',fontSize:16}},
+      {text:'อธิบายสภาพที่ไม่ปกติ',options:{bold:true,color:'FFFFFF',fill:headFill,align:'center',valign:'middle',fontFace:'Angsana New',fontSize:16}}
+    ]];
+    // merge categories with same name (template repeats some) — group by category text
+    const catMap={};const catOrder=[];
+    TEMPLATE_DATA.forEach((cat,si)=>{
+      const name=cat.category.replace('การตรวจสอบ','').trim();
+      if(!catMap[name]){catMap[name]={total:0,ok:0,bad:0,notes:[]};catOrder.push(name);}
+      cat.points.forEach((p,pi)=>{
+        catMap[name].total++;
+        const st=state['s'+si+'p'+pi]||{};
+        if(st.result==='pass')catMap[name].ok++;
+        if(st.result==='fail'){catMap[name].bad++;
+          const label=(p.code||p.location||('จุดที่ '+(pi+1)));
+          catMap[name].notes.push(label+(st.note?(': '+st.note):''));
+        }
+      });
+    });
+    catOrder.forEach(name=>{
+      const c=catMap[name];
+      const cell=(t,al)=>({text:String(t),options:{align:al||'center',valign:'middle',fontFace:'Angsana New',fontSize:13,color:'1a212b'}});
+      rows.push([
+        {text:name,options:{align:'left',valign:'middle',fontFace:'Angsana New',fontSize:13,bold:true,color:'1a212b'}},
+        cell(c.total||'-'),
+        cell(c.ok||(c.ok===0&&c.bad===0?'-':0)),
+        cell(c.bad||(c.bad===0?'':0)),
+        {text:c.notes.join('\n'),options:{align:'left',valign:'middle',fontFace:'Angsana New',fontSize:12,color:'c0392b'}}
+      ]);
+    });
+    sum.addTable(rows,{
+      x:0.3,y:1.5,w:12.7,
+      colW:[4.06,1.74,1.29,0.95,4.66],
+      border:{type:'solid',color:'888888',pt:1},
+      valign:'middle',
+      autoPage:true,autoPageRepeatHeader:true,autoPageLineWeight:-0.5,
+      newSlideStartY:1.0
+    });
+
+    // ===== PER-POINT PHOTO SLIDES =====
     TEMPLATE_DATA.forEach(cat=>{
       let pts=cat.points.map((p,pi)=>({p,pi}));
       if(onlyPhotoExport)pts=pts.filter(({p},i)=>true); // filter below by photo
@@ -357,6 +416,7 @@ document.getElementById('btn-export').onclick=async function(){
         });
       }
     });
+
     const fname='รายงานอุปกรณ์ฉุกเฉิน-'+new Date().toISOString().slice(0,10)+'.pptx';
     await pptx.writeFile({fileName:fname});
     toast('สร้าง PowerPoint สำเร็จ ('+pageNo+' สไลด์)');
