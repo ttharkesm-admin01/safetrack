@@ -74,25 +74,35 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
 .cap .code{font-weight:800;font-size:13px;color:var(--green2)}
 .cap .ord{color:var(--mut);font-weight:600}
 .cap .loc{font-size:11.5px;color:var(--txt);margin-top:2px;min-height:15px}
-.controls{display:flex;gap:6px;margin-top:9px}
-.phactions{display:flex;gap:6px;margin-top:9px}
-.phactions button{flex:1;border:1px solid var(--line);background:var(--panel2);color:var(--txt);font-size:11.5px;font-weight:700;padding:7px 0;border-radius:9px;cursor:pointer;font-family:inherit}
-.phactions button.del{flex:0 0 34px;color:var(--fail);border-color:var(--fail)}
-.controls button{flex:1;border:1px solid var(--line);background:var(--panel2);color:var(--mut);font-size:11.5px;font-weight:700;padding:7px 0;border-radius:9px;cursor:pointer;font-family:inherit}
-.controls button.ap{background:var(--pass);border-color:var(--pass);color:#fff}
-.controls button.af{background:var(--fail);border-color:var(--fail);color:#fff}
+.controls{display:flex;gap:7px;margin-top:9px}
+.phactions{display:flex;gap:7px;margin-top:9px}
+/* photo action buttons — green-tinted outlined */
+.phactions button{flex:1;border:1px solid var(--line);background:var(--panel2);color:var(--txt);font-size:11.5px;font-weight:700;padding:9px 0;border-radius:10px;cursor:pointer;font-family:inherit;transition:transform .08s,background .12s,border-color .12s,box-shadow .12s}
+.phactions button:active{transform:scale(.94)}
+.phactions button:not(.del):active{background:rgba(24,135,68,.1);border-color:var(--green)}
+.phactions button.del{flex:0 0 38px;color:var(--fail);border-color:rgba(220,58,67,.4);background:rgba(220,58,67,.06)}
+/* pass / fail toggle buttons */
+.controls button{flex:1;border:1.5px solid var(--line);background:var(--panel2);color:var(--mut);font-size:12px;font-weight:800;padding:9px 0;border-radius:10px;cursor:pointer;font-family:inherit;transition:transform .08s,background .12s,border-color .12s,box-shadow .12s;display:flex;align-items:center;justify-content:center;gap:5px}
+.controls button:active{transform:scale(.94)}
+.controls button.ap{background:var(--pass);border-color:var(--pass);color:#fff;box-shadow:0 2px 8px rgba(31,157,107,.35)}
+.controls button.af{background:var(--fail);border-color:var(--fail);color:#fff;box-shadow:0 2px 8px rgba(220,58,67,.35)}
+/* idle-state hint tints so the user knows which is which */
+.controls button:not(.ap):not(.af).pbtn{color:var(--pass);border-color:rgba(31,157,107,.35)}
+.controls button:not(.ap):not(.af).fbtn{color:var(--fail);border-color:rgba(220,58,67,.35)}
 .note{width:100%;margin-top:7px;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:6px 9px;font-size:11.5px;font-family:inherit;resize:none}
 .fab{position:fixed;left:0;right:0;bottom:0;z-index:40;background:linear-gradient(180deg,transparent,var(--bg) 22%);padding:14px 16px;display:flex;gap:10px}
-.fab button{flex:1;border:none;border-radius:13px;padding:15px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
-.fab .exp{background:linear-gradient(135deg,var(--accent),#ff8a5c);color:#1a1206}
-.fab .more{background:var(--panel2);color:var(--txt);border:1px solid var(--line);flex:0 0 52px}
+.fab button{flex:1;border:none;border-radius:14px;padding:15px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .08s,box-shadow .12s}
+.fab button:active{transform:translateY(1px) scale(.99)}
+.fab .exp{background:linear-gradient(135deg,#f5851f,var(--accent));color:#fff;box-shadow:0 6px 18px rgba(232,115,15,.4)}
+.fab .more{background:#fff;color:var(--green2);border:1px solid var(--line);flex:0 0 54px;font-size:20px;box-shadow:0 2px 8px rgba(20,50,30,.1)}
 .sheet{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);display:none;align-items:flex-end}
 .sheet.show{display:flex}
 .sheet .inner{background:var(--panel);width:100%;border-radius:20px 20px 0 0;padding:20px 18px 30px;border-top:1px solid var(--line)}
 .sheet h3{font-size:16px;margin-bottom:14px}
 .sheet .row{display:flex;gap:10px;margin-bottom:10px}
-.sheet button{flex:1;padding:13px;border-radius:11px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer}
-.sheet button.danger{color:var(--fail);border-color:var(--fail)}
+.sheet button{flex:1;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:transform .08s,background .12s}
+.sheet button:active{transform:scale(.97);background:rgba(24,135,68,.08)}
+.sheet button.danger{color:var(--fail);border-color:rgba(220,58,67,.4);background:rgba(220,58,67,.05)}
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#000;color:#fff;padding:11px 20px;border-radius:30px;font-size:13px;z-index:60;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90%;text-align:center}
 .toast.show{opacity:.95}
 .lightbox{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:20px}
@@ -252,8 +262,8 @@ function render(){
             (st.photo?'<button data-act="delphoto" data-id="'+id+'" class="del">✕</button>':'')+
           '</div>'+
           '<div class="controls">'+
-            '<button data-act="pass" data-id="'+id+'" class="'+(st.result==='pass'?'ap':'')+'">ปกติ</button>'+
-            '<button data-act="fail" data-id="'+id+'" class="'+(st.result==='fail'?'af':'')+'">ไม่ปกติ</button>'+
+            '<button data-act="pass" data-id="'+id+'" class="pbtn '+(st.result==='pass'?'ap':'')+'">✓ ปกติ</button>'+
+            '<button data-act="fail" data-id="'+id+'" class="fbtn '+(st.result==='fail'?'af':'')+'">✕ ไม่ปกติ</button>'+
           '</div>'+
           '<textarea class="note" rows="1" placeholder="หมายเหตุ…" data-act="note" data-id="'+id+'">'+(st.note||'')+'</textarea>'+
         '</div>';
