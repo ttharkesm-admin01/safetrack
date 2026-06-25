@@ -61,15 +61,20 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
 .cathead .chev{color:var(--mut);transition:transform .2s;font-size:12px}
 .cat.collapsed .chev{transform:rotate(-90deg)}
 .cat.collapsed .grid{display:none}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;padding:11px 14px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 4px rgba(20,50,30,.06)}
 .card.done{border-color:var(--pass)}
 .card.issue{border-color:var(--fail)}
-.photo{aspect-ratio:1/.82;background:var(--panel2);position:relative;display:grid;place-items:center;cursor:pointer;overflow:hidden}
+.photo{aspect-ratio:1/.72;background:var(--panel2);position:relative;display:grid;place-items:center;cursor:pointer;overflow:hidden}
 .photo img{width:100%;height:100%;object-fit:cover}
-.photo .ph{color:var(--mut);font-size:12px;text-align:center;padding:8px}
-.photo .ph svg{display:block;margin:0 auto 6px}
-.photo .badge{position:absolute;top:6px;right:6px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;color:#fff}
+.photo .ph{color:var(--mut);font-size:11.5px;text-align:center;padding:6px}
+.photo .ph svg{display:block;margin:0 auto 5px}
+/* always-visible status badge (top-right) */
+.photo .badge{position:absolute;top:6px;right:6px;font-size:10px;font-weight:800;padding:3px 9px 3px 7px;border-radius:20px;color:#fff;display:inline-flex;align-items:center;gap:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.photo .badge::before{content:"";width:7px;height:7px;border-radius:50%;background:#fff;opacity:.95}
+.badge.pend{background:#d9920c}
+.badge.pass{background:var(--pass)}
+.badge.fail{background:var(--fail)}
 .cap{padding:9px 10px 10px}
 .cap .code{font-weight:800;font-size:13px;color:var(--green2)}
 .cap .ord{color:var(--mut);font-weight:600}
@@ -128,6 +133,8 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
 .totop{position:fixed;right:16px;bottom:96px;z-index:35;width:44px;height:44px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);font-size:20px;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4)}
 .totop.show{display:flex}
 @media(min-width:560px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:860px){.grid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:1180px){.grid{grid-template-columns:repeat(5,1fr);max-width:1320px;margin:0 auto}}
 </style>
 </head>
 <body>
@@ -201,6 +208,7 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
       <h3>ตัวเลือกเพิ่มเติม</h3>
       <button class="x" id="opt-close" aria-label="ปิด">✕</button>
     </div>
+    <div class="row"><button class="opt on" id="opt-autonext"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12h13m0 0l-5-5m5 5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>เลื่อนไปจุดถัดไปอัตโนมัติ (Auto Next)</button></div>
     <div class="row"><button class="opt" id="opt-onlyphoto"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="10" r="1.5" fill="currentColor"/><path d="M21 16l-5-5L5 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>เลือกออกเฉพาะจุดที่มีรูป</button></div>
     <div class="row"><button class="opt" id="opt-collapse"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M8 4h13M8 10h13M8 16h13M3 4l2 2-2 2M3 14l2 2-2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>ยุบ / ขยายทุกหมวด</button></div>
     <div class="row">
@@ -236,8 +244,20 @@ let state={};
 try{state=JSON.parse(lsGet(LS_KEY)||'{}');}catch(e){state={};}
 let onlyPhotoExport=false;
 let activeFilter='all'; // all | pending | pass | fail
+let autoNext=true; // jump to next point after marking result
 
 function uid(si,pi){return 's'+si+'p'+pi}
+// flat ordered list of all point ids — used by Auto-Next
+const FLAT_IDS=[];TEMPLATE_DATA.forEach((c,si)=>c.points.forEach((p,pi)=>FLAT_IDS.push(uid(si,pi))));
+function gotoNext(curId){
+  const i=FLAT_IDS.indexOf(curId);if(i<0)return;
+  for(let j=i+1;j<FLAT_IDS.length;j++){
+    const el=document.querySelector('.photo[data-id="'+FLAT_IDS[j]+'"]');
+    if(el){const card=el.closest('.card');card.scrollIntoView({behavior:'smooth',block:'center'});
+      card.style.transition='box-shadow .3s';card.style.boxShadow='0 0 0 2px var(--green)';
+      setTimeout(()=>{card.style.boxShadow='';},900);return;}
+  }
+}
 function save(){lsSet(LS_KEY,JSON.stringify(state))}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200)}
 
@@ -272,11 +292,14 @@ function render(){
       card.className='card'+(st.result==='fail'?' issue':(st.photo&&st.result?' done':''));
       const ordTxt=p.order?('<span class="ord">'+p.order+'. </span>'):'';
       const codeTxt=p.code?p.code:'(ไม่มีรหัส)';
-      const badge=st.result?('<span class="badge" style="background:'+(st.result==='pass'?'var(--pass)':'var(--fail)')+'">'+(st.result==='pass'?'ปกติ':'ไม่ปกติ')+'</span>'):'';
+      const bCls=st.result==='pass'?'pass':(st.result==='fail'?'fail':'pend');
+      const bTxt=st.result==='pass'?'ปกติ':(st.result==='fail'?'ไม่ปกติ':'รอตรวจ');
+      const badge='<span class="badge '+bCls+'">'+bTxt+'</span>';
       card.innerHTML=
         '<div class="photo" data-act="'+(st.photo?'view':'gallery')+'" data-id="'+id+'">'+
-          (st.photo?('<img src="'+st.photo+'">'+badge):
-            ('<div class="ph"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M3 8a2 2 0 012-2h2l1.5-2h7L18 6h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" stroke="#5a6878" stroke-width="1.6"/><circle cx="12" cy="12.5" r="3.2" stroke="#5a6878" stroke-width="1.6"/></svg>แตะเพื่อเลือกรูป</div>'))+
+          (st.photo?('<img src="'+st.photo+'">'):
+            ('<div class="ph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M3 8a2 2 0 012-2h2l1.5-2h7L18 6h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" stroke="#5a6878" stroke-width="1.6"/><circle cx="12" cy="12.5" r="3.2" stroke="#5a6878" stroke-width="1.6"/></svg>แตะเพื่อเลือกรูป</div>'))+
+          badge+
         '</div>'+
         '<div class="cap">'+
           '<div class="code">'+ordTxt+codeTxt+'</div>'+
@@ -324,8 +347,10 @@ document.getElementById('list').addEventListener('click',e=>{
   else if(act==='delphoto'){if(confirm('ลบรูปนี้?')){state[id]=state[id]||{};delete state[id].photo;save();render();}}
   else if(act==='pass'||act==='fail'){
     state[id]=state[id]||{};
-    state[id].result=(state[id].result===act)?null:act;
+    const wasSet=state[id].result===act;
+    state[id].result=wasSet?null:act;
     save();render();
+    if(autoNext && !wasSet){requestAnimationFrame(()=>gotoNext(id));}
   }
 });
 document.getElementById('list').addEventListener('click',e=>{
@@ -393,6 +418,7 @@ document.getElementById('opt-collapse').onclick=()=>{
   const anyOpen=cats.some(c=>!c.classList.contains('collapsed'));
   cats.forEach(c=>c.classList.toggle('collapsed',anyOpen));sheet.classList.remove('show');
 };
+document.getElementById('opt-autonext').onclick=function(){autoNext=!autoNext;this.classList.toggle('on',autoNext);toast(autoNext?'เปิด Auto Next':'ปิด Auto Next');};
 document.getElementById('opt-onlyphoto').onclick=function(){onlyPhotoExport=!onlyPhotoExport;this.classList.toggle('on',onlyPhotoExport);toast(onlyPhotoExport?'จะออกเฉพาะจุดที่มีรูป':'จะออกทุกจุด');};
 document.getElementById('opt-clear').onclick=()=>{if(confirm('ล้างข้อมูลและรูปทั้งหมด?')){state={};save();render();sheet.classList.remove('show');toast('ล้างข้อมูลแล้ว');}};
 document.getElementById('opt-backup').onclick=()=>{
