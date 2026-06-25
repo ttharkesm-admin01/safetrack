@@ -30,11 +30,20 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
 .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#ff9466);display:grid;place-items:center;font-weight:800;font-size:18px;color:#1a1206;flex-shrink:0}
 .topbar h1{font-size:17px;font-weight:700;letter-spacing:.2px}
 .topbar .sub{font-size:11.5px;color:var(--mut);font-weight:500}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 16px}
-.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 8px;text-align:center}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 16px 8px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 8px;text-align:center;cursor:pointer;transition:border-color .15s,transform .1s}
+.stat:active{transform:scale(.96)}
+.stat.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .stat .n{font-size:21px;font-weight:800;line-height:1}
 .stat .l{font-size:10.5px;color:var(--mut);margin-top:4px}
-.stat.t .n{color:var(--txt)} .stat.p .n{color:var(--pass)} .stat.f .n{color:var(--fail)} .stat.w .n{color:var(--accent)}
+.stat.t .n{color:var(--txt)} .stat.p .n{color:var(--pass)} .stat.f .n{color:var(--fail)} .stat.d .n{color:var(--pend)}
+/* progress bar */
+.prog{padding:0 16px 6px}
+.prog .track{height:8px;background:var(--panel);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.prog .fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),#ff9466);border-radius:20px;transition:width .35s ease}
+.prog .pct{font-size:11px;color:var(--mut);margin-top:5px;text-align:center}
+.prog .pct b{color:var(--txt)}
+.empty{padding:50px 24px;text-align:center;color:var(--mut);font-size:14px}
 .bar{padding:0 16px 8px}
 .bar input{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--txt);padding:11px 14px;border-radius:11px;font-size:14px;font-family:inherit}
 .bar input::placeholder{color:var(--mut)}
@@ -84,6 +93,9 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
 .lightbox{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:20px}
 .lightbox.show{display:flex}
 .lightbox img{max-width:100%;max-height:100%;border-radius:10px}
+/* back-to-top */
+.totop{position:fixed;right:16px;bottom:96px;z-index:35;width:44px;height:44px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);font-size:20px;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.totop.show{display:flex}
 @media(min-width:560px){.grid{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
@@ -125,10 +137,15 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
 </div>
 
 <div class="stats">
-  <div class="stat t"><div class="n" id="s-total">0</div><div class="l">ทั้งหมด</div></div>
-  <div class="stat p"><div class="n" id="s-pass">0</div><div class="l">ปกติ</div></div>
-  <div class="stat f"><div class="n" id="s-fail">0</div><div class="l">ไม่ปกติ</div></div>
-  <div class="stat w"><div class="n" id="s-photo">0</div><div class="l">มีรูป</div></div>
+  <div class="stat t" data-filter="all"><div class="n" id="s-total">0</div><div class="l">ทั้งหมด</div></div>
+  <div class="stat d" data-filter="pending"><div class="n" id="s-pend">0</div><div class="l">ยังไม่ตรวจ</div></div>
+  <div class="stat p" data-filter="pass"><div class="n" id="s-pass">0</div><div class="l">ปกติ</div></div>
+  <div class="stat f" data-filter="fail"><div class="n" id="s-fail">0</div><div class="l">ไม่ปกติ</div></div>
+</div>
+
+<div class="prog">
+  <div class="track"><div class="fill" id="prog-fill"></div></div>
+  <div class="pct" id="prog-pct">ตรวจแล้ว <b>0</b> จาก <b>0</b> จุด</div>
 </div>
 
 <div class="bar"><input id="search" placeholder="ค้นหา รหัส / ตำแหน่ง / ประเภท…"></div>
@@ -155,6 +172,7 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
   </div>
 </div>
 
+<button class="totop" id="totop" aria-label="กลับขึ้นบน">↑</button>
 <div class="toast" id="toast"></div>
 <div class="lightbox" id="lightbox"><img id="lb-img"></div>
 
@@ -177,6 +195,7 @@ function lsSet(k,v){try{if(STORAGE_OK){window.localStorage.setItem(k,v);return;}
 let state={};
 try{state=JSON.parse(lsGet(LS_KEY)||'{}');}catch(e){state={};}
 let onlyPhotoExport=false;
+let activeFilter='all'; // all | pending | pass | fail
 
 function uid(si,pi){return 's'+si+'p'+pi}
 function save(){lsSet(LS_KEY,JSON.stringify(state))}
@@ -185,9 +204,13 @@ function toast(m){const t=document.getElementById('toast');t.textContent=m;t.cla
 function render(){
   const q=(document.getElementById('search').value||'').toLowerCase().trim();
   const list=document.getElementById('list');list.innerHTML='';
-  let tot=0,pass=0,fail=0,photo=0;
+  let tot=0,pass=0,fail=0,photo=0,shown=0;
   TEMPLATE_DATA.forEach((cat,si)=>{
-    const matchPts=cat.points.map((p,pi)=>({p,pi})).filter(({p})=>{
+    const matchPts=cat.points.map((p,pi)=>({p,pi})).filter(({p,pi})=>{
+      const st=state[uid(si,pi)]||{};
+      if(activeFilter==='pending'&&st.result)return false;
+      if(activeFilter==='pass'&&st.result!=='pass')return false;
+      if(activeFilter==='fail'&&st.result!=='fail')return false;
       if(!q)return true;
       return (p.code+' '+p.location+' '+cat.category).toLowerCase().includes(q);
     });
@@ -197,6 +220,7 @@ function render(){
       if(st.result==='pass'){pass++;cOk++;}if(st.result==='fail'){fail++;cBad++;}if(st.photo)photo++;
     });
     if(matchPts.length===0)return;
+    shown+=matchPts.length;
     const wrap=document.createElement('div');wrap.className='cat';wrap.dataset.si=si;
     const okPill=cOk>0?('<span class="cn cn-ok">ปกติ '+cOk+'</span>'):'';
     const badPill=cBad>0?('<span class="cn cn-bad">ไม่ปกติ '+cBad+'</span>'):'';
@@ -232,10 +256,22 @@ function render(){
     });
     list.appendChild(wrap);
   });
+  const done=pass+fail, pend=tot-done;
   document.getElementById('s-total').textContent=tot;
+  document.getElementById('s-pend').textContent=pend;
   document.getElementById('s-pass').textContent=pass;
   document.getElementById('s-fail').textContent=fail;
-  document.getElementById('s-photo').textContent=photo;
+  // progress
+  const pctVal=tot?Math.round(done/tot*100):0;
+  document.getElementById('prog-fill').style.width=pctVal+'%';
+  document.getElementById('prog-pct').innerHTML='ตรวจแล้ว <b>'+done+'</b> จาก <b>'+tot+'</b> จุด ('+pctVal+'%)';
+  // active filter highlight
+  document.querySelectorAll('.stat').forEach(s=>s.classList.toggle('active',s.dataset.filter===activeFilter));
+  // empty state
+  if(shown===0){
+    const msg=q?'ไม่พบรายการที่ค้นหา':(activeFilter==='pending'?'ตรวจครบทุกจุดแล้ว 🎉':'ไม่มีรายการในตัวกรองนี้');
+    list.innerHTML='<div class="empty">'+msg+'</div>';
+  }
 }
 
 // delegated events
@@ -291,6 +327,21 @@ function resizeImage(file,maxW,quality,cb){
 }
 
 document.getElementById('search').addEventListener('input',render);
+
+// stat cards as status filters (tap again to clear)
+document.querySelectorAll('.stat').forEach(s=>{
+  s.addEventListener('click',()=>{
+    const f=s.dataset.filter;
+    activeFilter=(activeFilter===f||f==='all')?'all':f;
+    render();
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+// back-to-top button
+const totop=document.getElementById('totop');
+window.addEventListener('scroll',()=>{totop.classList.toggle('show',window.scrollY>400);},{passive:true});
+totop.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 
 // sheet
 const sheet=document.getElementById('sheet');
