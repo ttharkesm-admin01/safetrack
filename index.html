@@ -2,7 +2,10 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f6e34">
+<meta name="color-scheme" content="light">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>SafeTrack — รายงานตรวจอุปกรณ์ฉุกเฉิน</title>
 <script>
 /* Lazy-load pptxgenjs only when exporting (keeps file small for in-app browsers) */
@@ -11,6 +14,11 @@ window.__loadPptx = function(){
     if(window.PptxGenJS){resolve(window.PptxGenJS);return;}
     var s=document.createElement('script');
     s.src='https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';
+    // Subresource Integrity: the browser refuses to run the file unless its bytes
+    // hash to exactly this value — supply-chain protection if the CDN is tampered.
+    s.integrity='sha384-Cck14aA9cifjYolcnjebXRfWGkz5ltHMBiG4px/j8GS+xQcb7OhNQWZYyWjQ+UwQ';
+    s.crossOrigin='anonymous';
+    s.referrerPolicy='no-referrer';
     s.onload=function(){resolve(window.PptxGenJS);};
     s.onerror=function(){reject(new Error('โหลดไลบรารีไม่สำเร็จ - ต้องมีอินเทอร์เน็ตตอนกดออก PowerPoint'));};
     document.head.appendChild(s);
@@ -233,10 +241,12 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
 <input type="file" id="file-camera" accept="image/*" capture="environment" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden">
 
 <script>
-window.TEMPLATE_DATA = [{"slide": 1, "category": "ถังดับเพลิงชนิดผงเคมีแห้ง", "points": [{"order": "1", "code": "A-001", "location": "โรงพักขยะ 1"}, {"order": "2", "code": "A-002", "location": "โรงพักขยะ 2"}, {"order": "3", "code": "A-031", "location": "หน้าห้องน้ำชาย ชั้น 2 อาคารสำนักงาน"}, {"order": "4", "code": "A-032", "location": "ทางเดินไปห้องประชุม 2 อาคารสำนักงาน"}, {"order": "5", "code": "A-033", "location": "ชานพักบันไดทางขึ้นหอพัก2"}, {"order": "6", "code": "A-034", "location": "ชั้น 2 หอพัก 2"}, {"order": "7", "code": "A-035", "location": "ชานพักบันไดทางขึ้น หอพัก 1"}, {"order": "8", "code": "A-036", "location": "ชั้น 2 หอพัก 1"}, {"order": "9", "code": "A-037", "location": "หน้าห้องประกอบอาหาร"}, {"order": "10", "code": "A-038", "location": "โรงอาหาร"}, {"order": "11", "code": "", "location": "หน้าห้องพักลูกค้า"}, {"order": "12", "code": "B-004", "location": "หน้าห้องความปลอดภัย ตึกรวมมิตร"}, {"order": "13", "code": "", "location": "โรงสเปรย์น้ำยาฆ่าเชื้อ"}, {"order": "14", "code": "B-005", "location": "หน้าห้องประชุม ตึกเกษมสุข"}, {"order": "15", "code": "C-003", "location": "บันไดทางขึ้นห้องประชุม 1 อาคารสำนักงาน"}, {"order": "16", "code": "C-004", "location": "หน้าห้องผู้จัดการทั่วไป อาคารสำนักงาน"}, {"order": "17", "code": "C-005", "location": "ประตูทางออกฝั่งลานจอดรถศูนย์ TPM"}, {"order": "18", "code": "C-006", "location": "ประตูทางออกฝั่งสนามบอลศูนย์ TPM"}, {"order": "19", "code": "", "location": "จุดจัดเก็บแอลกอฮอล์1"}, {"order": "20", "code": "", "location": "จุดจัดเก็บแอลกอฮอล์2"}]}, {"slide": 2, "category": "ถังดับเพลิงชนิดน้ำยาเหลวระเหย", "points": [{"order": "1", "code": "B-013", "location": "ข้าง อสร.1 ทางขึ้นหลังคา"}]}, {"slide": 3, "category": "ถังดับเพลิงชนิดโฟม", "points": [{"order": "1", "code": "", "location": "ข้างปั๊มน้ำมันดีเซล 1"}, {"order": "2", "code": "", "location": "ข้างปั๊มน้ำมันดีเซล 2"}]}, {"slide": 4, "category": "ไฟฉุกเฉิน", "points": [{"order": "1", "code": "F-010", "location": "โต๊ะเจ้าหน้าที่จัดซื้อ บริเวณตึกรวมมิตร"}, {"order": "2", "code": "F-011", "location": "ห้องพยาบาล บริเวณตึกรวมมิตร"}, {"order": "3", "code": "F-012", "location": "หน้าตึกรวมมิตร"}, {"order": "4", "code": "F-013", "location": "ห้องบัญชีบริเวณอาคารสำนักงาน"}, {"order": "5", "code": "F-014", "location": "หน้าห้องกาแฟบริเวณอาคารสำนักงาน"}, {"order": "6", "code": "F-015", "location": "ในห้องประชุม 1 บริเวณอาคารสำนักงาน"}, {"order": "7", "code": "F-016", "location": "หน้าห้องพักรับรองบริเวณอาคารสำนักงาน"}, {"order": "8", "code": "F-017", "location": "ในห้องประชุม 2บริเวณอาคารสำนักงาน"}, {"order": "", "code": "F-018", "location": "โต๊ะคุณศศิวิมล ก้อนเงิน บริเวณตึกเกษมสุข"}, {"order": "10", "code": "F-019", "location": "ห้องตาชั่ง บริเวณตึกเกษมสุข"}, {"order": "11", "code": "F-020", "location": "ห้องจัดซื้อวัตถุดิบบริเวณตึกเกษมสุข"}, {"order": "12", "code": "F-021", "location": "ชานพักบันไดทางขึ้น หอพัก 2"}, {"order": "13", "code": "F-022", "location": "ชั้น 2 ตู้ยา หอพัก 1"}, {"order": "14", "code": "F-023", "location": "ประตูทางออกฝั่งลานจอดรถศูนย์ TPM"}, {"order": "15", "code": "F-024", "location": "ประตูทางออกฝั่งสนามบอลศูนย์ TPM"}, {"order": "16", "code": "F-025", "location": "ในห้องประกอบอาหาร"}, {"order": "17", "code": "F-026", "location": "หน้าห้องออกกำลังกาย"}, {"order": "18", "code": "F-027", "location": "ในห้องจัดเก็บอุปกรณ์ผจญเพลิง"}, {"order": "19", "code": "F-028", "location": "ด้านนอกฝั่งซ้ายห้องจัดเก็บอุปกรณ์ผจญเพลิง"}, {"order": "20", "code": "F-029", "location": "ด้านนอกฝั่งขวาห้องจัดเก็บอุปกรณ์ผจญเพลิง"}, {"order": "21", "code": "F-132", "location": "ห้อง TPM ทางเดิน ชั้น 2"}, {"order": "22", "code": "F-133", "location": "ห้อง TPM อบรม 1"}, {"order": "23", "code": "F-134", "location": "ห้อง TPM อบรม 2"}, {"order": "24", "code": "F-135", "location": "หอพักเก่าหน้าห้องเบอร์ 1"}, {"order": "25", "code": "F-136", "location": "หอพักเก่าหน้าห้องเบอร์ 10"}, {"order": "26", "code": "F-137", "location": "หอพักเก่า ชั้น 1"}, {"order": "27", "code": "F-138", "location": "หอพักใหม่ชั้น 1"}, {"order": "28", "code": "F-139", "location": "หอพักใหม่ชั้น 2"}, {"order": "29", "code": "F-140", "location": "ห้องออกกำลังกาย"}, {"order": "30", "code": "F-141", "location": "โรงอาหาร"}]}, {"slide": 5, "category": "ตู้/สายฉีดน้ำดับเพลิง", "points": [{"order": "1", "code": "G-020", "location": "ด้านหน้าโรงงาน จุดหัวรับน้ำดับเพลิง1"}, {"order": "2", "code": "G-021", "location": "ด้านข้างโรงจอดรถตึกบริหาร"}, {"order": "3", "code": "G-022", "location": "ด้านข้างปั๊มลมตึกผลิต2"}, {"order": "4", "code": "G-023", "location": "ชั้น 2 บริเวณหอพัก 1"}, {"order": "5", "code": "G-024", "location": "ด้านข้างรั้ว หลังMeal Silo"}, {"order": "6", "code": "G-025", "location": "ด้านข้างรั้ว หลังโกดัง B1"}]}, {"slide": 6, "category": "HOSE REEL", "points": [{"order": "1", "code": "H-006", "location": "ชานพักบันไดทางขึ้นห้องประชุม 1"}]}, {"slide": 7, "category": "อ่างล้างตาฉุกเฉิน", "points": [{"order": "1", "code": "K-005", "location": "ข้างโรงสเปรย์น้ำยา"}, {"order": "2", "code": "", "location": "ข้างจุดเก็บแอลกอฮอล์"}]}, {"slide": 8, "category": "ขวดล้างตาฉุกเฉิน", "points": [{"order": "1", "code": "", "location": "โรงพักขยะ"}, {"order": "2", "code": "", "location": "โกดัง K3 ประตู 8"}]}, {"slide": 9, "category": "สัญญาณแจ้งเหตุฉุกเฉิน", "points": [{"order": "1", "code": "L-024", "location": "ประตูด้านหน้าศูนย์ TPM"}, {"order": "2", "code": "L-025", "location": "หอพัก 1 ชั้น 2"}, {"order": "3", "code": "L-026", "location": "หน้าตึกเกษมสุข"}, {"order": "4", "code": "L-027", "location": "หน้าห้องน้ำชั้นล่าง อาคารสำนักงาน"}, {"order": "5", "code": "L-047", "location": "ตึกรวมมิตร"}, {"order": "6", "code": "", "location": "โรงอาหารใหม่"}, {"order": "7", "code": "", "location": "โรงอาหารเก่า"}, {"order": "8", "code": "", "location": "ห้องเก็บเอกสารบัญชี"}, {"order": "9", "code": "", "location": "หอพัก 1 ชั้น 1"}, {"order": "10", "code": "", "location": "หอพัก 2 ชั้น 1"}, {"order": "11", "code": "", "location": "หอพัก 2 ชั้ น2"}, {"order": "12", "code": "", "location": "หน้าหน้าออกกำลังกาย"}, {"order": "13", "code": "", "location": "หน้าห้องญี่ปุ่น"}, {"order": "14", "code": "", "location": "ข้างห้องเก็บของหลังโกดัง K3"}, {"order": "15", "code": "", "location": "โรงพักขยะ"}, {"order": "16", "code": "", "location": "ทางขึ้นห้องโปรแกรม"}, {"order": "17", "code": "", "location": "ประตูด้านหลังศูนย์ TPM"}]}, {"slide": 10, "category": "Smoke Detector  ห้องโรงอาหารใหม่", "points": [{"order": "1", "code": "M-001", "location": "ห้องรับประทานอาหาร#1"}, {"order": "2", "code": "M-002", "location": "ห้องรับประทานอาหาร#2"}]}, {"slide": 11, "category": "Smoke Detector  ห้องโรงอาหารเก่า", "points": [{"order": "1", "code": "M-003", "location": "ห้องพักลูกค้า #1"}, {"order": "2", "code": "M-004", "location": "ห้องพักลูกค้า #2"}]}, {"slide": 12, "category": "Smoke Detector  ตึกรวมมิตร", "points": [{"order": "1", "code": "M-005", "location": "แจ้งคิว"}, {"order": "2", "code": "M-006", "location": "รับแขก"}, {"order": "3", "code": "M-007", "location": "จัดซื้อฯ"}, {"order": "4", "code": "M-008", "location": "ห้องพยาบาล"}, {"order": "5", "code": "M-009", "location": "ร้านค้า"}, {"order": "6", "code": "M-010", "location": "ห้องเก็บของ"}, {"order": "7", "code": "M-011", "location": "ห้องธุรการ"}, {"order": "8", "code": "M-012", "location": "ห้องบุคคล"}, {"order": "9", "code": "M-013", "location": "ทางเดินไปห้องน้ำ"}, {"order": "10", "code": "M-014", "location": "ห้อง จป."}, {"order": "11", "code": "M-015", "location": "ห้องชุมสาย"}]}, {"slide": 13, "category": "Smoke Detector  ศูนย์พัฒนาคน TPM ชั้น 1", "points": [{"order": "1", "code": "M-016", "location": "ห้องสอนงาน#1"}, {"order": "2", "code": "M-017", "location": "ห้องสอนงาน#2"}, {"order": "3", "code": "M-018", "location": "ห้องสอนงาน#3"}]}, {"slide": 14, "category": "Smoke Detector  ศูนย์พัฒนาคน TPM ชั้น 2", "points": [{"order": "1", "code": "M-019", "location": "ห้องวอร์รูม#1"}, {"order": "2", "code": "M-020", "location": "ห้องวอร์รูม#2"}, {"order": "3", "code": "M-021", "location": "ห้องวอร์รูม#3"}]}, {"slide": 15, "category": "Smoke Detector  โกดังเก็บของหลังโกดัง K3", "points": [{"order": "1", "code": "M-022", "location": "ตัวที่ 1"}, {"order": "2", "code": "M-023", "location": "ตัวที่ 2"}]}, {"slide": 16, "category": "Smoke Detector  ตึกเกษมสุข", "points": [{"order": "1", "code": "M-024", "location": "ห้องครัว"}, {"order": "2", "code": "M-025", "location": "ห้องประชุม"}, {"order": "3", "code": "M-026", "location": "โถง #1"}, {"order": "4", "code": "M-027", "location": "โถง #2"}, {"order": "5", "code": "M-028", "location": "โถง #3"}, {"order": "6", "code": "M-029", "location": "ห้องตาชั่ง"}, {"order": "7", "code": "M-030", "location": "ห้องเปิดใบรับ"}, {"order": "8", "code": "M-031", "location": "ห้องจัดซื้อวัตถุดิบ"}]}, {"slide": 17, "category": "Smoke Detector  ตึกบริหารชั้น 1", "points": [{"order": "1", "code": "M-032", "location": "หน้าห้องน้ำ"}, {"order": "2", "code": "M-033", "location": "โถง#1"}, {"order": "3", "code": "M-034", "location": "โถง#2"}, {"order": "4", "code": "M-035", "location": "บัญชี"}, {"order": "5", "code": "M-036", "location": "ห้องบัญชี"}, {"order": "6", "code": "M-037", "location": "ห้อง GM"}, {"order": "7", "code": "M-038", "location": "ห้อง DC Server"}, {"order": "8", "code": "M-039", "location": "ห้อง AVP"}]}, {"slide": 18, "category": "Smoke Detector  ตึกบริหาร ชั้น 2", "points": [{"order": "1", "code": "M-040", "location": "ห้องเตรียมเครื่องดื่ม"}, {"order": "2", "code": "M-041", "location": "หน้าห้องประชุม 1"}, {"order": "3", "code": "M-042", "location": "ห้องประชุม 1 #1"}, {"order": "4", "code": "M-043", "location": "ห้องประชุม 1 #2"}, {"order": "5", "code": "M-044", "location": "ห้องประชุม 1 #3"}, {"order": "6", "code": "M-045", "location": "ห้องนอน AVP"}, {"order": "7", "code": "M-046", "location": "ทางเดิน #1"}, {"order": "8", "code": "M-047", "location": "ทางเดิน #2"}, {"order": "9", "code": "M-048", "location": "ห้องประชุม2 #1"}, {"order": "10", "code": "M-049", "location": "ห้องประชุม2 #2"}, {"order": "11", "code": "M-050", "location": "ห้องประชุม2 #3"}, {"order": "12", "code": "M-051", "location": "ห้อง CSR"}, {"order": "13", "code": "M-052", "location": "ห้องสารบรรณฯ"}, {"order": "14", "code": "M-053", "location": "ห้องเก็บของธุรการ"}]}, {"slide": 19, "category": "Smoke Detector  หอพักเก่า ชั้น 1", "points": [{"order": "1", "code": "M-054", "location": "ห้องเบอร์#11"}, {"order": "2", "code": "M-055", "location": "ห้องเบอร์#11"}, {"order": "3", "code": "M-056", "location": "ห้องเบอร์#12"}, {"order": "4", "code": "M-057", "location": "ห้องเบอร์#13"}, {"order": "5", "code": "M-058", "location": "ห้องเบอร์#14"}, {"order": "6", "code": "M-059", "location": "ห้องเบอร์#15"}, {"order": "7", "code": "M-060", "location": "ห้องเบอร์#16"}, {"order": "8", "code": "M-061", "location": "ห้องเบอร์#17"}, {"order": "9", "code": "M-062", "location": "ห้องเบอร์#18"}, {"order": "10", "code": "M-063", "location": "ห้องเบอร์#19"}, {"order": "11", "code": "M-064", "location": "ห้องเบอร์#19"}, {"order": "12", "code": "M-065", "location": "ห้องเก็บของข้างห้องน้ำ"}]}, {"slide": 20, "category": "Smoke Detector  หอพักเก่า ชั้น 2", "points": [{"order": "1", "code": "M-066", "location": "ห้องเบอร์#1"}, {"order": "2", "code": "M-067", "location": "ห้องเบอร์#2"}, {"order": "3", "code": "M-068", "location": "ห้องเบอร์#3"}, {"order": "4", "code": "M-069", "location": "ห้องเบอร์#4"}, {"order": "5", "code": "M-070", "location": "ห้องเบอร์#5"}, {"order": "6", "code": "M-071", "location": "ห้องเบอร์#6"}, {"order": "7", "code": "M-072", "location": "ห้องเบอร์#7"}, {"order": "8", "code": "M-073", "location": "ห้องเบอร์#8"}, {"order": "9", "code": "M-074", "location": "ห้องเบอร์#9"}, {"order": "10", "code": "M-075", "location": "ห้องเบอร์#10"}]}, {"slide": 21, "category": "Smoke Detector  หอพักใหม่", "points": [{"order": "1", "code": "M-076", "location": "ห้องเบอร์#1"}, {"order": "2", "code": "M-077", "location": "ห้องเบอร์#2"}, {"order": "3", "code": "M-078", "location": "ห้องเบอร์#3"}, {"order": "4", "code": "M-079", "location": "ห้องเบอร์#4"}, {"order": "5", "code": "M-080", "location": "ห้องเบอร์#5"}, {"order": "6", "code": "M-081", "location": "ห้องเบอร์#6"}]}, {"slide": 22, "category": "Smoke Detector  ห้องเก็บเอกสาร", "points": [{"order": "1", "code": "M-082", "location": "ห้องเก็บของบัญชี"}, {"order": "2", "code": "M-083", "location": "ห้องเก็บของหน้าร้าน"}]}, {"slide": 23, "category": "Smoke Detector  ห้องออกกำลังกาย", "points": [{"order": "1", "code": "M-084", "location": "ห้องกำลังกาย"}]}, {"slide": 24, "category": "Smoke Detector  ห้องญี่ปุ่น", "points": [{"order": "1", "code": "M-085", "location": "ห้องญี่ปุ่น"}]}, {"slide": 25, "category": "Heat Detector โรงอาหารใหม่", "points": [{"order": "1", "code": "N-001", "location": "ร้านข้าว"}, {"order": "2", "code": "N-002", "location": "ร้านก๋วยเตี๋ยว"}]}, {"slide": 26, "category": "Smoke Detector  โรงพักขยะ", "points": [{"order": "1", "code": "N-003", "location": "ห้องขยะทั่วไป"}, {"order": "2", "code": "N-004", "location": "ห้องขยะรีไซเคิล"}, {"order": "3", "code": "N-005", "location": "ห้องขยะรีไซเคิล"}, {"order": "4", "code": "N-006", "location": "ห้องขยะอันตราย"}, {"order": "5", "code": "N-007", "location": "ห้องขยะอันตราย"}]}, {"slide": 27, "category": "Heat Detector ห้องครัว", "points": [{"order": "1", "code": "N-008", "location": "ห้องครัว"}]}, {"slide": 28, "category": "ป้ายทางออกฉุกเฉิน", "points": [{"order": "1", "code": "Q-001", "location": "ประตูทางออกบ่อปลา อาคารสำนักงาน"}, {"order": "2", "code": "Q-002", "location": "คานทางลงบันได อาคารสำนักงาน"}, {"order": "3", "code": "Q-003", "location": "ประตูทางออกฝั่งห้องน้ำ"}, {"order": "4", "code": "Q-004", "location": "ประตูทางออกห้องประชุม 2"}, {"order": "5", "code": "Q-005", "location": "ประตูทางออกห้องประชุม 1"}, {"order": "6", "code": "Q-006", "location": "เพดานหน้าห้องน้ำหญิง ชั้น 2"}, {"order": "7", "code": "Q-007", "location": "ประตูทางออก ตึกรวมมิตร"}, {"order": "8", "code": "Q-008", "location": "ประตูทางออกห้องพยาบาล"}, {"order": "9", "code": "Q-009", "location": "ประตูทางออกห้องจัดซื้อวัตถุดิบ"}, {"order": "10", "code": "Q-010", "location": "ประตูทางออกห้องตาชั่ง"}, {"order": "11", "code": "Q-011", "location": "ประตูทางออกตึกเกษมสุข"}, {"order": "12", "code": "Q-012", "location": "ประตูทางออกโรงอาหาร"}, {"order": "13", "code": "Q-013", "location": "ประตูทางออกศูนย์ TPM ฝั่งลานจอดรถ"}, {"order": "14", "code": "Q-014", "location": "ประตูทางออกศูนย์ TPM ฝั่งสนามบอล"}, {"order": "15", "code": "Q-015", "location": "ประตูทางออกห้อง WALL ROOM"}, {"order": "16", "code": "Q-016", "location": "หอพัก 1 ชั้น 1"}, {"order": "17", "code": "Q-017", "location": "หอพัก 1 ชั้น 1"}, {"order": "18", "code": "Q-019", "location": "หอพัก 1 ชั้น 2"}, {"order": "19", "code": "Q-020", "location": "หอพัก 1 ชั้น 2"}, {"order": "20", "code": "Q-021", "location": "หอพัก 2 ชั้น 2"}, {"order": "21", "code": "", "location": "หอพัก 2 ชั้น 2"}]}];
+window.TEMPLATE_DATA = [{"slide": 1, "category": "ถังดับเพลิงชนิดผงเคมีแห้ง", "points": [{"order": "1", "code": "A-001", "location": "โรงพักขยะ 1"}, {"order": "2", "code": "A-002", "location": "โรงพักขยะ 2"}, {"order": "3", "code": "A-031", "location": "หน้าห้องน้ำชาย ชั้น 2 อาคารสำนักงาน"}, {"order": "4", "code": "A-032", "location": "ทางเดินไปห้องประชุม 2 อาคารสำนักงาน"}, {"order": "5", "code": "A-033", "location": "ชานพักบันไดทางขึ้นหอพัก2"}, {"order": "6", "code": "A-034", "location": "ชั้น 2 หอพัก 2"}, {"order": "7", "code": "A-035", "location": "ชานพักบันไดทางขึ้น หอพัก 1"}, {"order": "8", "code": "A-036", "location": "ชั้น 2 หอพัก 1"}, {"order": "9", "code": "A-037", "location": "หน้าห้องประกอบอาหาร"}, {"order": "10", "code": "A-038", "location": "โรงอาหาร"}, {"order": "11", "code": "", "location": "หน้าห้องพักลูกค้า"}, {"order": "12", "code": "B-004", "location": "หน้าห้องความปลอดภัย ตึกรวมมิตร"}, {"order": "13", "code": "", "location": "โรงสเปรย์น้ำยาฆ่าเชื้อ"}, {"order": "14", "code": "B-005", "location": "หน้าห้องประชุม ตึกเกษมสุข"}, {"order": "15", "code": "C-003", "location": "บันไดทางขึ้นห้องประชุม 1 อาคารสำนักงาน"}, {"order": "16", "code": "C-004", "location": "หน้าห้องผู้จัดการทั่วไป อาคารสำนักงาน"}, {"order": "17", "code": "C-005", "location": "ประตูทางออกฝั่งลานจอดรถศูนย์ TPM"}, {"order": "18", "code": "C-006", "location": "ประตูทางออกฝั่งสนามบอลศูนย์ TPM"}, {"order": "19", "code": "", "location": "จุดจัดเก็บแอลกอฮอล์1"}, {"order": "20", "code": "", "location": "จุดจัดเก็บแอลกอฮอล์2"}]}, {"slide": 2, "category": "ถังดับเพลิงชนิดน้ำยาเหลวระเหย", "points": [{"order": "1", "code": "B-013", "location": "ข้าง อสร.1 ทางขึ้นหลังคา"}]}, {"slide": 3, "category": "ถังดับเพลิงชนิดโฟม", "points": [{"order": "1", "code": "", "location": "ข้างปั๊มน้ำมันดีเซล 1"}, {"order": "2", "code": "", "location": "ข้างปั๊มน้ำมันดีเซล 2"}]}, {"slide": 4, "category": "ไฟฉุกเฉิน", "points": [{"order": "1", "code": "F-010", "location": "โต๊ะเจ้าหน้าที่จัดซื้อ บริเวณตึกรวมมิตร"}, {"order": "2", "code": "F-011", "location": "ห้องพยาบาล บริเวณตึกรวมมิตร"}, {"order": "3", "code": "F-012", "location": "หน้าตึกรวมมิตร"}, {"order": "4", "code": "F-013", "location": "ห้องบัญชีบริเวณอาคารสำนักงาน"}, {"order": "5", "code": "F-014", "location": "หน้าห้องกาแฟบริเวณอาคารสำนักงาน"}, {"order": "6", "code": "F-015", "location": "ในห้องประชุม 1 บริเวณอาคารสำนักงาน"}, {"order": "7", "code": "F-016", "location": "หน้าห้องพักรับรองบริเวณอาคารสำนักงาน"}, {"order": "8", "code": "F-017", "location": "ในห้องประชุม 2บริเวณอาคารสำนักงาน"}, {"order": "9", "code": "F-018", "location": "โต๊ะคุณศศิวิมล ก้อนเงิน บริเวณตึกเกษมสุข"}, {"order": "10", "code": "F-019", "location": "ห้องตาชั่ง บริเวณตึกเกษมสุข"}, {"order": "11", "code": "F-020", "location": "ห้องจัดซื้อวัตถุดิบบริเวณตึกเกษมสุข"}, {"order": "12", "code": "F-021", "location": "ชานพักบันไดทางขึ้น หอพัก 2"}, {"order": "13", "code": "F-022", "location": "ชั้น 2 ตู้ยา หอพัก 1"}, {"order": "14", "code": "F-023", "location": "ประตูทางออกฝั่งลานจอดรถศูนย์ TPM"}, {"order": "15", "code": "F-024", "location": "ประตูทางออกฝั่งสนามบอลศูนย์ TPM"}, {"order": "16", "code": "F-025", "location": "ในห้องประกอบอาหาร"}, {"order": "17", "code": "F-026", "location": "หน้าห้องออกกำลังกาย"}, {"order": "18", "code": "F-027", "location": "ในห้องจัดเก็บอุปกรณ์ผจญเพลิง"}, {"order": "19", "code": "F-028", "location": "ด้านนอกฝั่งซ้ายห้องจัดเก็บอุปกรณ์ผจญเพลิง"}, {"order": "20", "code": "F-029", "location": "ด้านนอกฝั่งขวาห้องจัดเก็บอุปกรณ์ผจญเพลิง"}, {"order": "21", "code": "F-132", "location": "ห้อง TPM ทางเดิน ชั้น 2"}, {"order": "22", "code": "F-133", "location": "ห้อง TPM อบรม 1"}, {"order": "23", "code": "F-134", "location": "ห้อง TPM อบรม 2"}, {"order": "24", "code": "F-135", "location": "หอพักเก่าหน้าห้องเบอร์ 1"}, {"order": "25", "code": "F-136", "location": "หอพักเก่าหน้าห้องเบอร์ 10"}, {"order": "26", "code": "F-137", "location": "หอพักเก่า ชั้น 1"}, {"order": "27", "code": "F-138", "location": "หอพักใหม่ชั้น 1"}, {"order": "28", "code": "F-139", "location": "หอพักใหม่ชั้น 2"}, {"order": "29", "code": "F-140", "location": "ห้องออกกำลังกาย"}, {"order": "30", "code": "F-141", "location": "โรงอาหาร"}]}, {"slide": 5, "category": "ตู้/สายฉีดน้ำดับเพลิง", "points": [{"order": "1", "code": "G-020", "location": "ด้านหน้าโรงงาน จุดหัวรับน้ำดับเพลิง1"}, {"order": "2", "code": "G-021", "location": "ด้านข้างโรงจอดรถตึกบริหาร"}, {"order": "3", "code": "G-022", "location": "ด้านข้างปั๊มลมตึกผลิต2"}, {"order": "4", "code": "G-023", "location": "ชั้น 2 บริเวณหอพัก 1"}, {"order": "5", "code": "G-024", "location": "ด้านข้างรั้ว หลังMeal Silo"}, {"order": "6", "code": "G-025", "location": "ด้านข้างรั้ว หลังโกดัง B1"}]}, {"slide": 6, "category": "HOSE REEL", "points": [{"order": "1", "code": "H-006", "location": "ชานพักบันไดทางขึ้นห้องประชุม 1"}]}, {"slide": 7, "category": "อ่างล้างตาฉุกเฉิน", "points": [{"order": "1", "code": "K-005", "location": "ข้างโรงสเปรย์น้ำยา"}, {"order": "2", "code": "", "location": "ข้างจุดเก็บแอลกอฮอล์"}]}, {"slide": 8, "category": "ขวดล้างตาฉุกเฉิน", "points": [{"order": "1", "code": "", "location": "โรงพักขยะ"}, {"order": "2", "code": "", "location": "โกดัง K3 ประตู 8"}]}, {"slide": 9, "category": "สัญญาณแจ้งเหตุฉุกเฉิน", "points": [{"order": "1", "code": "L-024", "location": "ประตูด้านหน้าศูนย์ TPM"}, {"order": "2", "code": "L-025", "location": "หอพัก 1 ชั้น 2"}, {"order": "3", "code": "L-026", "location": "หน้าตึกเกษมสุข"}, {"order": "4", "code": "L-027", "location": "หน้าห้องน้ำชั้นล่าง อาคารสำนักงาน"}, {"order": "5", "code": "L-047", "location": "ตึกรวมมิตร"}, {"order": "6", "code": "", "location": "โรงอาหารใหม่"}, {"order": "7", "code": "", "location": "โรงอาหารเก่า"}, {"order": "8", "code": "", "location": "ห้องเก็บเอกสารบัญชี"}, {"order": "9", "code": "", "location": "หอพัก 1 ชั้น 1"}, {"order": "10", "code": "", "location": "หอพัก 2 ชั้น 1"}, {"order": "11", "code": "", "location": "หอพัก 2 ชั้น 2"}, {"order": "12", "code": "", "location": "หน้าหน้าออกกำลังกาย"}, {"order": "13", "code": "", "location": "หน้าห้องญี่ปุ่น"}, {"order": "14", "code": "", "location": "ข้างห้องเก็บของหลังโกดัง K3"}, {"order": "15", "code": "", "location": "โรงพักขยะ"}, {"order": "16", "code": "", "location": "ทางขึ้นห้องโปรแกรม"}, {"order": "17", "code": "", "location": "ประตูด้านหลังศูนย์ TPM"}]}, {"slide": 10, "category": "Smoke Detector  ห้องโรงอาหารใหม่", "points": [{"order": "1", "code": "M-001", "location": "ห้องรับประทานอาหาร#1"}, {"order": "2", "code": "M-002", "location": "ห้องรับประทานอาหาร#2"}]}, {"slide": 11, "category": "Smoke Detector  ห้องโรงอาหารเก่า", "points": [{"order": "1", "code": "M-003", "location": "ห้องพักลูกค้า #1"}, {"order": "2", "code": "M-004", "location": "ห้องพักลูกค้า #2"}]}, {"slide": 12, "category": "Smoke Detector  ตึกรวมมิตร", "points": [{"order": "1", "code": "M-005", "location": "แจ้งคิว"}, {"order": "2", "code": "M-006", "location": "รับแขก"}, {"order": "3", "code": "M-007", "location": "จัดซื้อฯ"}, {"order": "4", "code": "M-008", "location": "ห้องพยาบาล"}, {"order": "5", "code": "M-009", "location": "ร้านค้า"}, {"order": "6", "code": "M-010", "location": "ห้องเก็บของ"}, {"order": "7", "code": "M-011", "location": "ห้องธุรการ"}, {"order": "8", "code": "M-012", "location": "ห้องบุคคล"}, {"order": "9", "code": "M-013", "location": "ทางเดินไปห้องน้ำ"}, {"order": "10", "code": "M-014", "location": "ห้อง จป."}, {"order": "11", "code": "M-015", "location": "ห้องชุมสาย"}]}, {"slide": 13, "category": "Smoke Detector  ศูนย์พัฒนาคน TPM ชั้น 1", "points": [{"order": "1", "code": "M-016", "location": "ห้องสอนงาน#1"}, {"order": "2", "code": "M-017", "location": "ห้องสอนงาน#2"}, {"order": "3", "code": "M-018", "location": "ห้องสอนงาน#3"}]}, {"slide": 14, "category": "Smoke Detector  ศูนย์พัฒนาคน TPM ชั้น 2", "points": [{"order": "1", "code": "M-019", "location": "ห้องวอร์รูม#1"}, {"order": "2", "code": "M-020", "location": "ห้องวอร์รูม#2"}, {"order": "3", "code": "M-021", "location": "ห้องวอร์รูม#3"}]}, {"slide": 15, "category": "Smoke Detector  โกดังเก็บของหลังโกดัง K3", "points": [{"order": "1", "code": "M-022", "location": "ตัวที่ 1"}, {"order": "2", "code": "M-023", "location": "ตัวที่ 2"}]}, {"slide": 16, "category": "Smoke Detector  ตึกเกษมสุข", "points": [{"order": "1", "code": "M-024", "location": "ห้องครัว"}, {"order": "2", "code": "M-025", "location": "ห้องประชุม"}, {"order": "3", "code": "M-026", "location": "โถง #1"}, {"order": "4", "code": "M-027", "location": "โถง #2"}, {"order": "5", "code": "M-028", "location": "โถง #3"}, {"order": "6", "code": "M-029", "location": "ห้องตาชั่ง"}, {"order": "7", "code": "M-030", "location": "ห้องเปิดใบรับ"}, {"order": "8", "code": "M-031", "location": "ห้องจัดซื้อวัตถุดิบ"}]}, {"slide": 17, "category": "Smoke Detector  ตึกบริหารชั้น 1", "points": [{"order": "1", "code": "M-032", "location": "หน้าห้องน้ำ"}, {"order": "2", "code": "M-033", "location": "โถง#1"}, {"order": "3", "code": "M-034", "location": "โถง#2"}, {"order": "4", "code": "M-035", "location": "บัญชี"}, {"order": "5", "code": "M-036", "location": "ห้องบัญชี"}, {"order": "6", "code": "M-037", "location": "ห้อง GM"}, {"order": "7", "code": "M-038", "location": "ห้อง DC Server"}, {"order": "8", "code": "M-039", "location": "ห้อง AVP"}]}, {"slide": 18, "category": "Smoke Detector  ตึกบริหาร ชั้น 2", "points": [{"order": "1", "code": "M-040", "location": "ห้องเตรียมเครื่องดื่ม"}, {"order": "2", "code": "M-041", "location": "หน้าห้องประชุม 1"}, {"order": "3", "code": "M-042", "location": "ห้องประชุม 1 #1"}, {"order": "4", "code": "M-043", "location": "ห้องประชุม 1 #2"}, {"order": "5", "code": "M-044", "location": "ห้องประชุม 1 #3"}, {"order": "6", "code": "M-045", "location": "ห้องนอน AVP"}, {"order": "7", "code": "M-046", "location": "ทางเดิน #1"}, {"order": "8", "code": "M-047", "location": "ทางเดิน #2"}, {"order": "9", "code": "M-048", "location": "ห้องประชุม2 #1"}, {"order": "10", "code": "M-049", "location": "ห้องประชุม2 #2"}, {"order": "11", "code": "M-050", "location": "ห้องประชุม2 #3"}, {"order": "12", "code": "M-051", "location": "ห้อง CSR"}, {"order": "13", "code": "M-052", "location": "ห้องสารบรรณฯ"}, {"order": "14", "code": "M-053", "location": "ห้องเก็บของธุรการ"}]}, {"slide": 19, "category": "Smoke Detector  หอพักเก่า ชั้น 1", "points": [{"order": "1", "code": "M-054", "location": "ห้องเบอร์#11"}, {"order": "2", "code": "M-055", "location": "ห้องเบอร์#11"}, {"order": "3", "code": "M-056", "location": "ห้องเบอร์#12"}, {"order": "4", "code": "M-057", "location": "ห้องเบอร์#13"}, {"order": "5", "code": "M-058", "location": "ห้องเบอร์#14"}, {"order": "6", "code": "M-059", "location": "ห้องเบอร์#15"}, {"order": "7", "code": "M-060", "location": "ห้องเบอร์#16"}, {"order": "8", "code": "M-061", "location": "ห้องเบอร์#17"}, {"order": "9", "code": "M-062", "location": "ห้องเบอร์#18"}, {"order": "10", "code": "M-063", "location": "ห้องเบอร์#19"}, {"order": "11", "code": "M-064", "location": "ห้องเบอร์#19"}, {"order": "12", "code": "M-065", "location": "ห้องเก็บของข้างห้องน้ำ"}]}, {"slide": 20, "category": "Smoke Detector  หอพักเก่า ชั้น 2", "points": [{"order": "1", "code": "M-066", "location": "ห้องเบอร์#1"}, {"order": "2", "code": "M-067", "location": "ห้องเบอร์#2"}, {"order": "3", "code": "M-068", "location": "ห้องเบอร์#3"}, {"order": "4", "code": "M-069", "location": "ห้องเบอร์#4"}, {"order": "5", "code": "M-070", "location": "ห้องเบอร์#5"}, {"order": "6", "code": "M-071", "location": "ห้องเบอร์#6"}, {"order": "7", "code": "M-072", "location": "ห้องเบอร์#7"}, {"order": "8", "code": "M-073", "location": "ห้องเบอร์#8"}, {"order": "9", "code": "M-074", "location": "ห้องเบอร์#9"}, {"order": "10", "code": "M-075", "location": "ห้องเบอร์#10"}]}, {"slide": 21, "category": "Smoke Detector  หอพักใหม่", "points": [{"order": "1", "code": "M-076", "location": "ห้องเบอร์#1"}, {"order": "2", "code": "M-077", "location": "ห้องเบอร์#2"}, {"order": "3", "code": "M-078", "location": "ห้องเบอร์#3"}, {"order": "4", "code": "M-079", "location": "ห้องเบอร์#4"}, {"order": "5", "code": "M-080", "location": "ห้องเบอร์#5"}, {"order": "6", "code": "M-081", "location": "ห้องเบอร์#6"}]}, {"slide": 22, "category": "Smoke Detector  ห้องเก็บเอกสาร", "points": [{"order": "1", "code": "M-082", "location": "ห้องเก็บของบัญชี"}, {"order": "2", "code": "M-083", "location": "ห้องเก็บของหน้าร้าน"}]}, {"slide": 23, "category": "Smoke Detector  ห้องออกกำลังกาย", "points": [{"order": "1", "code": "M-084", "location": "ห้องกำลังกาย"}]}, {"slide": 24, "category": "Smoke Detector  ห้องญี่ปุ่น", "points": [{"order": "1", "code": "M-085", "location": "ห้องญี่ปุ่น"}]}, {"slide": 25, "category": "Heat Detector โรงอาหารใหม่", "points": [{"order": "1", "code": "N-001", "location": "ร้านข้าว"}, {"order": "2", "code": "N-002", "location": "ร้านก๋วยเตี๋ยว"}]}, {"slide": 26, "category": "Smoke Detector  โรงพักขยะ", "points": [{"order": "1", "code": "N-003", "location": "ห้องขยะทั่วไป"}, {"order": "2", "code": "N-004", "location": "ห้องขยะรีไซเคิล"}, {"order": "3", "code": "N-005", "location": "ห้องขยะรีไซเคิล"}, {"order": "4", "code": "N-006", "location": "ห้องขยะอันตราย"}, {"order": "5", "code": "N-007", "location": "ห้องขยะอันตราย"}]}, {"slide": 27, "category": "Heat Detector ห้องครัว", "points": [{"order": "1", "code": "N-008", "location": "ห้องครัว"}]}, {"slide": 28, "category": "ป้ายทางออกฉุกเฉิน", "points": [{"order": "1", "code": "Q-001", "location": "ประตูทางออกบ่อปลา อาคารสำนักงาน"}, {"order": "2", "code": "Q-002", "location": "คานทางลงบันได อาคารสำนักงาน"}, {"order": "3", "code": "Q-003", "location": "ประตูทางออกฝั่งห้องน้ำ"}, {"order": "4", "code": "Q-004", "location": "ประตูทางออกห้องประชุม 2"}, {"order": "5", "code": "Q-005", "location": "ประตูทางออกห้องประชุม 1"}, {"order": "6", "code": "Q-006", "location": "เพดานหน้าห้องน้ำหญิง ชั้น 2"}, {"order": "7", "code": "Q-007", "location": "ประตูทางออก ตึกรวมมิตร"}, {"order": "8", "code": "Q-008", "location": "ประตูทางออกห้องพยาบาล"}, {"order": "9", "code": "Q-009", "location": "ประตูทางออกห้องจัดซื้อวัตถุดิบ"}, {"order": "10", "code": "Q-010", "location": "ประตูทางออกห้องตาชั่ง"}, {"order": "11", "code": "Q-011", "location": "ประตูทางออกตึกเกษมสุข"}, {"order": "12", "code": "Q-012", "location": "ประตูทางออกโรงอาหาร"}, {"order": "13", "code": "Q-013", "location": "ประตูทางออกศูนย์ TPM ฝั่งลานจอดรถ"}, {"order": "14", "code": "Q-014", "location": "ประตูทางออกศูนย์ TPM ฝั่งสนามบอล"}, {"order": "15", "code": "Q-015", "location": "ประตูทางออกห้อง WALL ROOM"}, {"order": "16", "code": "Q-016", "location": "หอพัก 1 ชั้น 1"}, {"order": "17", "code": "Q-017", "location": "หอพัก 1 ชั้น 1"}, {"order": "18", "code": "Q-019", "location": "หอพัก 1 ชั้น 2"}, {"order": "19", "code": "Q-020", "location": "หอพัก 1 ชั้น 2"}, {"order": "20", "code": "Q-021", "location": "หอพัก 2 ชั้น 2"}, {"order": "21", "code": "", "location": "หอพัก 2 ชั้น 2"}]}];
 </script>
 <script>
-const LS_KEY='safetrack_ef002_v1';
+const META_KEY='safetrack_ef002_meta_v2'; // small metadata only (result/note)
+const OLD_KEY='safetrack_ef002_v1';        // legacy combined blob (state+photos) — migrated away
+const SETT_KEY='safetrack_ef002_sett_v1';  // ui settings
 // Safe storage: in-app browsers (CPF Connext, LINE, etc.) may block localStorage.
 // Fall back to in-memory so the app always loads and works.
 var memStore={};
@@ -244,100 +254,215 @@ var STORAGE_OK=false;
 (function(){try{var t='__t';window.localStorage.setItem(t,'1');window.localStorage.removeItem(t);STORAGE_OK=true;}catch(e){STORAGE_OK=false;}})();
 function lsGet(k){try{if(STORAGE_OK)return window.localStorage.getItem(k);}catch(e){}return (k in memStore)?memStore[k]:null;}
 function lsSet(k,v){try{if(STORAGE_OK){window.localStorage.setItem(k,v);return;}}catch(e){}memStore[k]=v;}
-let state={};
-try{state=JSON.parse(lsGet(LS_KEY)||'{}');}catch(e){state={};}
+
+// ---- runtime ids (positional, ascii-safe — used only in the DOM/event layer) ----
+function uid(si,pi){return 's'+si+'p'+pi}
+// ---- stable content ids (used for PERSISTENCE so editing the template can't remap saved data) ----
+const STABLE={};        // uid -> stable id
+const STABLE2UID={};    // stable id -> uid
+const FLAT_IDS=[];      // ordered uids — used by Auto-Next
+TEMPLATE_DATA.forEach((c,si)=>c.points.forEach((p,pi)=>{
+  const u=uid(si,pi);FLAT_IDS.push(u);
+  const sid=[c.category,p.code||'',p.location||'',p.order||''].join('');
+  STABLE[u]=sid;if(!(sid in STABLE2UID))STABLE2UID[sid]=u;
+}));
+
+// ---- in-memory model ----
+let meta={};            // uid -> {result, note}
+const photoBlob={};     // uid -> Blob (compressed JPEG)
+const photoURL={};      // uid -> object URL (for <img>/lightbox)
 let onlyPhotoExport=false;
 let activeFilter='all'; // all | pending | pass | fail
-let autoNext=true; // jump to next point after marking result
+let autoNext=true;      // jump to next point after marking result
+let metaPersistOK=true, photoPersistOK=true;
 
-function uid(si,pi){return 's'+si+'p'+pi}
-// flat ordered list of all point ids — used by Auto-Next
-const FLAT_IDS=[];TEMPLATE_DATA.forEach((c,si)=>c.points.forEach((p,pi)=>FLAT_IDS.push(uid(si,pi))));
+// ---- IndexedDB: photos live here (localStorage is ~5MB — far too small for ~195 images) ----
+let db=null, idbOK=false;
+function openDB(){return new Promise(function(res){
+  try{
+    const r=indexedDB.open('safetrack',1);
+    r.onupgradeneeded=function(){r.result.createObjectStore('photos');};
+    r.onsuccess=function(){db=r.result;idbOK=true;res();};
+    r.onerror=function(){idbOK=false;res();};
+    r.onblocked=function(){idbOK=false;res();};
+  }catch(e){idbOK=false;res();}
+});}
+function idbPut(key,val){return new Promise(function(res,rej){const tx=db.transaction('photos','readwrite');tx.objectStore('photos').put(val,key);tx.oncomplete=function(){res();};tx.onerror=function(){rej(tx.error);};tx.onabort=function(){rej(tx.error||new Error('abort'));};});}
+function idbDel(key){return new Promise(function(res,rej){const tx=db.transaction('photos','readwrite');tx.objectStore('photos').delete(key);tx.oncomplete=function(){res();};tx.onerror=function(){rej(tx.error);};});}
+function idbClear(){return new Promise(function(res,rej){const tx=db.transaction('photos','readwrite');tx.objectStore('photos').clear();tx.oncomplete=function(){res();};tx.onerror=function(){rej(tx.error);};});}
+function idbAll(){return new Promise(function(res){const out=[];try{const tx=db.transaction('photos','readonly');const cur=tx.objectStore('photos').openCursor();cur.onsuccess=function(e){const c=e.target.result;if(c){out.push({key:c.key,val:c.value});c.continue();}else res(out);};cur.onerror=function(){res(out);};}catch(e){res(out);}});}
+
+// ---- blob / dataURL / escape helpers ----
+function dataURLToBlob(d){const i=d.indexOf(',');const mime=(d.slice(5,i).split(';')[0])||'image/jpeg';const bin=atob(d.slice(i+1));const u8=new Uint8Array(bin.length);for(let j=0;j<bin.length;j++)u8[j]=bin.charCodeAt(j);return new Blob([u8],{type:mime});}
+function blobToDataURL(b){return new Promise(function(res,rej){const r=new FileReader();r.onload=function(){res(r.result);};r.onerror=function(){rej(r.error||new Error('อ่านรูปไม่สำเร็จ'));};r.readAsDataURL(b);});}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+// ---- persistence ----
+function saveMeta(){
+  const out={};
+  for(const u in meta){const m=meta[u];if(m&&(m.result||m.note))out[STABLE[u]]=m;}
+  try{
+    const s=JSON.stringify(out);
+    if(STORAGE_OK)window.localStorage.setItem(META_KEY,s);else memStore[META_KEY]=s;
+    metaPersistOK=true;
+  }catch(e){metaPersistOK=false;toast('⚠️ บันทึกข้อมูลไม่สำเร็จ ('+(e&&e.name||'error')+') — กรุณาสำรองข้อมูล');}
+}
+function saveSettings(){lsSet(SETT_KEY,JSON.stringify({autoNext:autoNext,onlyPhoto:onlyPhotoExport,filter:activeFilter}));}
+function loadSettings(){try{const s=JSON.parse(lsGet(SETT_KEY)||'{}');if(typeof s.autoNext==='boolean')autoNext=s.autoNext;if(typeof s.onlyPhoto==='boolean')onlyPhotoExport=s.onlyPhoto;if(s.filter)activeFilter=s.filter;}catch(e){}}
+
+// ---- photo ops ----
+function setPhoto(id,blob){
+  if(photoURL[id])URL.revokeObjectURL(photoURL[id]);
+  photoBlob[id]=blob;photoURL[id]=URL.createObjectURL(blob);
+  if(idbOK)return idbPut(STABLE[id],blob).catch(function(){photoPersistOK=false;toast('⚠️ เซฟรูปลงเครื่องไม่สำเร็จ — กรุณาสำรองข้อมูล');});
+  photoPersistOK=false;return Promise.resolve();
+}
+function delPhoto(id){
+  if(photoURL[id]){URL.revokeObjectURL(photoURL[id]);delete photoURL[id];}
+  delete photoBlob[id];
+  if(idbOK)return idbDel(STABLE[id]).catch(function(){});
+  return Promise.resolve();
+}
+
+// ---- load + one-time migration from the old localStorage blob ----
+async function loadAll(){
+  // 1) new-format metadata
+  try{const raw=lsGet(META_KEY);if(raw){const sm=JSON.parse(raw)||{};for(const sid in sm){const u=STABLE2UID[sid];if(u)meta[u]=sm[sid];}}}catch(e){}
+  // 2) photos from IndexedDB
+  if(idbOK){const all=await idbAll();all.forEach(function(rec){const u=STABLE2UID[rec.key];if(u&&rec.val instanceof Blob){photoBlob[u]=rec.val;photoURL[u]=URL.createObjectURL(rec.val);}});}
+  // 3) fold in any leftover legacy data (never overwrites newer values)
+  if(lsGet(OLD_KEY))await migrateOld();
+}
+async function migrateOld(){
+  let old;try{old=JSON.parse(lsGet(OLD_KEY)||'{}')||{};}catch(e){return;}
+  let photoFail=false,moved=0;
+  for(const u in old){
+    if(!/^s\d+p\d+$/.test(u)||!(u in STABLE))continue;
+    const o=old[u]||{};
+    if(!(u in meta)){const m={};if(o.result)m.result=o.result;if(o.note)m.note=o.note;if(m.result||m.note)meta[u]=m;}
+    if(!(u in photoBlob)&&typeof o.photo==='string'&&o.photo.indexOf('data:')===0){
+      try{const b=dataURLToBlob(o.photo);photoBlob[u]=b;photoURL[u]=URL.createObjectURL(b);
+        if(idbOK){await idbPut(STABLE[u],b);moved++;}else photoFail=true;
+      }catch(e){photoFail=true;}
+    }
+  }
+  saveMeta();
+  // only drop the legacy blob once its photos are safely in IndexedDB
+  if(idbOK&&!photoFail){try{if(STORAGE_OK)window.localStorage.removeItem(OLD_KEY);}catch(e){}}
+  if(moved)toast('อัปเกรดข้อมูลเดิมเรียบร้อย');
+}
+
+async function clearAll(silent){
+  meta={};
+  Object.keys(photoURL).forEach(function(u){URL.revokeObjectURL(photoURL[u]);delete photoURL[u];});
+  Object.keys(photoBlob).forEach(function(u){delete photoBlob[u];});
+  if(idbOK){try{await idbClear();}catch(e){}}
+  saveMeta();
+  if(!silent){render();toast('ล้างข้อมูลแล้ว');}
+}
+
 function gotoNext(curId){
   const i=FLAT_IDS.indexOf(curId);if(i<0)return;
   for(let j=i+1;j<FLAT_IDS.length;j++){
     const el=document.querySelector('.photo[data-id="'+FLAT_IDS[j]+'"]');
     if(el){const card=el.closest('.card');card.scrollIntoView({behavior:'smooth',block:'center'});
       card.style.transition='box-shadow .3s';card.style.boxShadow='0 0 0 2px var(--green)';
-      setTimeout(()=>{card.style.boxShadow='';},900);return;}
+      setTimeout(function(){card.style.boxShadow='';},900);return;}
   }
 }
-function save(){lsSet(LS_KEY,JSON.stringify(state))}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200)}
 
-function render(){
-  const q=(document.getElementById('search').value||'').toLowerCase().trim();
-  const list=document.getElementById('list');list.innerHTML='';
-  let tot=0,pass=0,fail=0,photo=0,shown=0;
-  TEMPLATE_DATA.forEach((cat,si)=>{
-    const matchPts=cat.points.map((p,pi)=>({p,pi})).filter(({p,pi})=>{
-      const st=state[uid(si,pi)]||{};
-      if(activeFilter==='pending'&&st.result)return false;
-      if(activeFilter==='pass'&&st.result!=='pass')return false;
-      if(activeFilter==='fail'&&st.result!=='fail')return false;
-      if(!q)return true;
-      return (p.code+' '+p.location+' '+cat.category).toLowerCase().includes(q);
-    });
-    let cOk=0,cBad=0;
-    cat.points.forEach((p,pi)=>{
-      tot++;const st=state[uid(si,pi)]||{};
-      if(st.result==='pass'){pass++;cOk++;}if(st.result==='fail'){fail++;cBad++;}if(st.photo)photo++;
-    });
-    if(matchPts.length===0)return;
-    shown+=matchPts.length;
-    const wrap=document.createElement('div');wrap.className='cat';wrap.dataset.si=si;
-    const okPill=cOk>0?('<span class="cn cn-ok">ปกติ '+cOk+'</span>'):'';
-    const badPill=cBad>0?('<span class="cn cn-bad">ไม่ปกติ '+cBad+'</span>'):'';
-    wrap.innerHTML='<div class="cathead"><span class="chev">▼</span><span class="ct">'+cat.category+'</span>'+okPill+badPill+'<span class="cn">'+cat.points.length+' จุด</span></div><div class="grid"></div>';
-    const grid=wrap.querySelector('.grid');
-    matchPts.forEach(({p,pi})=>{
-      const id=uid(si,pi);const st=state[id]||{};
-      const card=document.createElement('div');
-      card.className='card'+(st.result==='fail'?' issue':(st.photo&&st.result?' done':''));
-      const ordTxt=p.order?('<span class="ord">'+p.order+'. </span>'):'';
-      const codeTxt=p.code?p.code:'(ไม่มีรหัส)';
-      const bCls=st.result==='pass'?'pass':(st.result==='fail'?'fail':'pend');
-      const bTxt=st.result==='pass'?'ปกติ':(st.result==='fail'?'ไม่ปกติ':'รอตรวจ');
-      const badge='<span class="badge '+bCls+'">'+bTxt+'</span>';
-      card.innerHTML=
-        '<div class="photo" data-act="'+(st.photo?'view':'gallery')+'" data-id="'+id+'">'+
-          (st.photo?('<img src="'+st.photo+'">'):
-            ('<div class="ph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M3 8a2 2 0 012-2h2l1.5-2h7L18 6h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" stroke="#5a6878" stroke-width="1.6"/><circle cx="12" cy="12.5" r="3.2" stroke="#5a6878" stroke-width="1.6"/></svg>แตะเพื่อเลือกรูป</div>'))+
-          badge+
-        '</div>'+
-        '<div class="cap">'+
-          '<div class="code">'+ordTxt+codeTxt+'</div>'+
-          '<div class="loc">'+(p.location||'—')+'</div>'+
-          '<div class="phactions">'+
-            '<button data-act="gallery" data-id="'+id+'">📁 เลือกรูป</button>'+
-            '<button data-act="camera" data-id="'+id+'">📷 ถ่าย</button>'+
-            (st.photo?'<button data-act="delphoto" data-id="'+id+'" class="del">✕</button>':'')+
-          '</div>'+
-          '<div class="controls">'+
-            '<button data-act="pass" data-id="'+id+'" class="pbtn '+(st.result==='pass'?'ap':'')+'">✓ ปกติ</button>'+
-            '<button data-act="fail" data-id="'+id+'" class="fbtn '+(st.result==='fail'?'af':'')+'">✕ ไม่ปกติ</button>'+
-          '</div>'+
-          '<textarea class="note" rows="1" placeholder="หมายเหตุ…" data-act="note" data-id="'+id+'">'+(st.note||'')+'</textarea>'+
-        '</div>';
-      grid.appendChild(card);
-    });
-    list.appendChild(wrap);
-  });
-  const done=pass+fail, pend=tot-done;
+const CAM_SVG='<svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M3 8a2 2 0 012-2h2l1.5-2h7L18 6h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" stroke="#5a6878" stroke-width="1.6"/><circle cx="12" cy="12.5" r="3.2" stroke="#5a6878" stroke-width="1.6"/></svg>';
+
+function catHeadHTML(si){
+  const cat=TEMPLATE_DATA[si];let cOk=0,cBad=0;
+  cat.points.forEach((p,pi)=>{const st=meta[uid(si,pi)]||{};if(st.result==='pass')cOk++;else if(st.result==='fail')cBad++;});
+  const okPill=cOk>0?('<span class="cn cn-ok">ปกติ '+cOk+'</span>'):'';
+  const badPill=cBad>0?('<span class="cn cn-bad">ไม่ปกติ '+cBad+'</span>'):'';
+  return '<span class="chev">▼</span><span class="ct">'+esc(cat.category)+'</span>'+okPill+badPill+'<span class="cn">'+cat.points.length+' จุด</span>';
+}
+function cardHTML(si,pi){
+  const id=uid(si,pi);const p=TEMPLATE_DATA[si].points[pi];const st=meta[id]||{};
+  const hasPhoto=!!photoURL[id];
+  const cls='card'+(st.result==='fail'?' issue':(hasPhoto&&st.result?' done':''));
+  const ordTxt=p.order?('<span class="ord">'+esc(p.order)+'. </span>'):'';
+  const codeTxt=p.code?esc(p.code):'(ไม่มีรหัส)';
+  const bCls=st.result==='pass'?'pass':(st.result==='fail'?'fail':'pend');
+  const bTxt=st.result==='pass'?'ปกติ':(st.result==='fail'?'ไม่ปกติ':'รอตรวจ');
+  const badge='<span class="badge '+bCls+'">'+bTxt+'</span>';
+  const inner=
+    '<div class="photo" data-act="'+(hasPhoto?'view':'gallery')+'" data-id="'+id+'">'+
+      (hasPhoto?('<img src="'+photoURL[id]+'" alt="">'):
+        ('<div class="ph">'+CAM_SVG+'แตะเพื่อเลือกรูป</div>'))+
+      badge+
+    '</div>'+
+    '<div class="cap">'+
+      '<div class="code">'+ordTxt+codeTxt+'</div>'+
+      '<div class="loc">'+(p.location?esc(p.location):'—')+'</div>'+
+      '<div class="phactions">'+
+        '<button data-act="gallery" data-id="'+id+'">📁 เลือกรูป</button>'+
+        '<button data-act="camera" data-id="'+id+'">📷 ถ่าย</button>'+
+        (hasPhoto?'<button data-act="delphoto" data-id="'+id+'" class="del">✕</button>':'')+
+      '</div>'+
+      '<div class="controls">'+
+        '<button data-act="pass" data-id="'+id+'" class="pbtn '+(st.result==='pass'?'ap':'')+'">✓ ปกติ</button>'+
+        '<button data-act="fail" data-id="'+id+'" class="fbtn '+(st.result==='fail'?'af':'')+'">✕ ไม่ปกติ</button>'+
+      '</div>'+
+      '<textarea class="note" rows="1" placeholder="หมายเหตุ…" data-act="note" data-id="'+id+'">'+esc(st.note||'')+'</textarea>'+
+    '</div>';
+  return {cls:cls,inner:inner,id:id};
+}
+// targeted updates — avoid rebuilding the whole 195-card list on every tap
+function rerenderCard(id){
+  const ph=document.querySelector('.photo[data-id="'+id+'"]');if(!ph)return false;
+  const card=ph.closest('.card');const m=/^s(\d+)p(\d+)$/.exec(id);if(!m)return false;
+  const cd=cardHTML(+m[1],+m[2]);card.className=cd.cls;card.innerHTML=cd.inner;return true;
+}
+function refreshCatHead(si){const h=document.querySelector('.cat[data-si="'+si+'"] .cathead');if(h)h.innerHTML=catHeadHTML(si);}
+function refreshStats(){
+  let tot=0,pass=0,fail=0;
+  TEMPLATE_DATA.forEach((cat,si)=>cat.points.forEach((p,pi)=>{tot++;const st=meta[uid(si,pi)]||{};if(st.result==='pass')pass++;else if(st.result==='fail')fail++;}));
+  const done=pass+fail,pend=tot-done;
   document.getElementById('s-total').textContent=tot;
   document.getElementById('s-pend').textContent=pend;
   document.getElementById('s-pass').textContent=pass;
   document.getElementById('s-fail').textContent=fail;
-  // progress
   const pctVal=tot?Math.round(done/tot*100):0;
   document.getElementById('prog-fill').style.width=pctVal+'%';
   document.getElementById('prog-pct').innerHTML='ตรวจแล้ว <b>'+done+'</b> จาก <b>'+tot+'</b> จุด ('+pctVal+'%)';
-  // active filter highlight
   document.querySelectorAll('.stat').forEach(s=>s.classList.toggle('active',s.dataset.filter===activeFilter));
-  // empty state
+}
+function isFiltered(){return activeFilter!=='all'||((document.getElementById('search').value||'').trim()!=='');}
+
+function render(){
+  const q=(document.getElementById('search').value||'').toLowerCase().trim();
+  const list=document.getElementById('list');list.innerHTML='';
+  let shown=0;
+  TEMPLATE_DATA.forEach((cat,si)=>{
+    const matchPts=cat.points.map((p,pi)=>({p,pi})).filter(({p,pi})=>{
+      const st=meta[uid(si,pi)]||{};
+      if(activeFilter==='pending'&&st.result)return false;
+      if(activeFilter==='pass'&&st.result!=='pass')return false;
+      if(activeFilter==='fail'&&st.result!=='fail')return false;
+      if(!q)return true;
+      return (String(p.code)+' '+String(p.location)+' '+cat.category).toLowerCase().includes(q);
+    });
+    if(matchPts.length===0)return;
+    shown+=matchPts.length;
+    const wrap=document.createElement('div');wrap.className='cat';wrap.dataset.si=si;
+    wrap.innerHTML='<div class="cathead">'+catHeadHTML(si)+'</div><div class="grid"></div>';
+    const grid=wrap.querySelector('.grid');
+    matchPts.forEach(({p,pi})=>{
+      const cd=cardHTML(si,pi);
+      const card=document.createElement('div');card.className=cd.cls;card.innerHTML=cd.inner;
+      grid.appendChild(card);
+    });
+    list.appendChild(wrap);
+  });
+  refreshStats();
   if(shown===0){
     const msg=q?'ไม่พบรายการที่ค้นหา':(activeFilter==='pending'?'ตรวจครบทุกจุดแล้ว 🎉':'ไม่มีรายการในตัวกรองนี้');
-    list.innerHTML='<div class="empty">'+msg+'</div>';
+    list.innerHTML='<div class="empty">'+esc(msg)+'</div>';
   }
 }
 
@@ -347,13 +472,16 @@ document.getElementById('list').addEventListener('click',e=>{
   const act=el.dataset.act,id=el.dataset.id;
   if(act==='gallery'){pickPhoto(id,false);}
   else if(act==='camera'){pickPhoto(id,true);}
-  else if(act==='view'){const st=state[id];if(st&&st.photo){document.getElementById('lb-img').src=st.photo;document.getElementById('lightbox').classList.add('show');}}
-  else if(act==='delphoto'){if(confirm('ลบรูปนี้?')){state[id]=state[id]||{};delete state[id].photo;save();render();}}
+  else if(act==='view'){const u=photoURL[id];if(u){document.getElementById('lb-img').src=u;document.getElementById('lightbox').classList.add('show');}}
+  else if(act==='delphoto'){if(confirm('ลบรูปนี้?')){delPhoto(id).then(()=>{if(isFiltered())render();else if(!rerenderCard(id))render();});}}
   else if(act==='pass'||act==='fail'){
-    state[id]=state[id]||{};
-    const wasSet=state[id].result===act;
-    state[id].result=wasSet?null:act;
-    save();render();
+    meta[id]=meta[id]||{};
+    const wasSet=meta[id].result===act;
+    meta[id].result=wasSet?null:act;
+    saveMeta();
+    const mm=/^s(\d+)p/.exec(id);
+    if(isFiltered()){render();}
+    else{rerenderCard(id);if(mm)refreshCatHead(+mm[1]);refreshStats();}
     if(autoNext && !wasSet){requestAnimationFrame(()=>gotoNext(id));}
   }
 });
@@ -364,7 +492,7 @@ document.getElementById('list').addEventListener('click',e=>{
 });
 document.getElementById('list').addEventListener('input',e=>{
   const el=e.target.closest('[data-act="note"]');if(!el)return;
-  const id=el.dataset.id;state[id]=state[id]||{};state[id].note=el.value;save();
+  const id=el.dataset.id;meta[id]=meta[id]||{};meta[id].note=el.value;saveMeta();
 });
 document.getElementById('lightbox').addEventListener('click',()=>document.getElementById('lightbox').classList.remove('show'));
 
@@ -375,7 +503,10 @@ function handleFile(inp){
   if(!f||!pendingId)return;
   const id=pendingId;pendingId=null;
   toast('กำลังประมวลผลรูป…');
-  resizeImage(f,1200,.82,dataUrl=>{state[id]=state[id]||{};state[id].photo=dataUrl;save();render();toast('บันทึกรูปแล้ว');});
+  resizeImageToBlob(f,1200,.82)
+    .then(blob=>setPhoto(id,blob))
+    .then(()=>{if(isFiltered())render();else if(!rerenderCard(id))render();toast('บันทึกรูปแล้ว');})
+    .catch(err=>toast('ใส่รูปไม่สำเร็จ: '+(err&&err.message||err)));
 }
 document.getElementById('file-gallery').addEventListener('change',function(){handleFile(this);});
 document.getElementById('file-camera').addEventListener('change',function(){handleFile(this);});
@@ -384,24 +515,43 @@ function pickPhoto(id,useCamera){
   pendingId=id;
   document.getElementById(useCamera?'file-camera':'file-gallery').click();
 }
-function resizeImage(file,maxW,quality,cb){
-  const img=new Image();const rd=new FileReader();
-  rd.onload=()=>{img.onload=()=>{
-    let w=img.width,h=img.height;if(w>maxW){h=h*maxW/w;w=maxW;}
-    const c=document.createElement('canvas');c.width=w;c.height=h;
-    c.getContext('2d').drawImage(img,0,0,w,h);
-    cb(c.toDataURL('image/jpeg',quality));
-  };img.src=rd.result;};
-  rd.readAsDataURL(file);
+// Resize to a JPEG Blob. createImageBitmap({imageOrientation:'from-image'}) bakes in
+// EXIF rotation — phones tag portrait shots, and drawing a raw <img> to canvas would
+// otherwise lose that and export sideways photos.
+function resizeImageToBlob(file,maxW,quality){
+  return new Promise(function(resolve,reject){
+    function paint(src,w,h){
+      let tw=w,th=h;if(tw>maxW){th=Math.round(th*maxW/tw);tw=maxW;}
+      const c=document.createElement('canvas');c.width=tw;c.height=th;
+      c.getContext('2d').drawImage(src,0,0,tw,th);
+      if(src.close)src.close();
+      if(c.toBlob)c.toBlob(function(b){b?resolve(b):reject(new Error('แปลงรูปไม่สำเร็จ'));},'image/jpeg',quality);
+      else{try{resolve(dataURLToBlob(c.toDataURL('image/jpeg',quality)));}catch(e){reject(e);}}
+    }
+    function fallback(){
+      const img=new Image();const rd=new FileReader();
+      img.onerror=function(){reject(new Error('ไฟล์รูปไม่ถูกต้อง'));};
+      rd.onerror=function(){reject(new Error('อ่านไฟล์ไม่สำเร็จ'));};
+      rd.onload=function(){img.onload=function(){paint(img,img.naturalWidth||img.width,img.naturalHeight||img.height);};img.src=rd.result;};
+      rd.readAsDataURL(file);
+    }
+    if(window.createImageBitmap){
+      createImageBitmap(file,{imageOrientation:'from-image'})
+        .then(function(bmp){paint(bmp,bmp.width,bmp.height);})
+        .catch(fallback);
+    }else fallback();
+  });
 }
 
-document.getElementById('search').addEventListener('input',render);
+let _searchT=null;
+document.getElementById('search').addEventListener('input',function(){clearTimeout(_searchT);_searchT=setTimeout(render,120);});
 
 // stat cards as status filters (tap again to clear)
 document.querySelectorAll('.stat').forEach(s=>{
   s.addEventListener('click',()=>{
     const f=s.dataset.filter;
     activeFilter=(activeFilter===f||f==='all')?'all':f;
+    saveSettings();
     render();
     window.scrollTo({top:0,behavior:'smooth'});
   });
@@ -422,17 +572,42 @@ document.getElementById('opt-collapse').onclick=()=>{
   const anyOpen=cats.some(c=>!c.classList.contains('collapsed'));
   cats.forEach(c=>c.classList.toggle('collapsed',anyOpen));sheet.classList.remove('show');
 };
-document.getElementById('opt-autonext').onclick=function(){autoNext=!autoNext;this.classList.toggle('on',autoNext);toast(autoNext?'เปิด Auto Next':'ปิด Auto Next');};
-document.getElementById('opt-onlyphoto').onclick=function(){onlyPhotoExport=!onlyPhotoExport;this.classList.toggle('on',onlyPhotoExport);toast(onlyPhotoExport?'จะออกเฉพาะจุดที่มีรูป':'จะออกทุกจุด');};
-document.getElementById('opt-clear').onclick=()=>{if(confirm('ล้างข้อมูลและรูปทั้งหมด?')){state={};save();render();sheet.classList.remove('show');toast('ล้างข้อมูลแล้ว');}};
-document.getElementById('opt-backup').onclick=()=>{
-  const blob=new Blob([JSON.stringify(state)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='safetrack-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();sheet.classList.remove('show');
+document.getElementById('opt-autonext').onclick=function(){autoNext=!autoNext;this.classList.toggle('on',autoNext);saveSettings();toast(autoNext?'เปิด Auto Next':'ปิด Auto Next');};
+document.getElementById('opt-onlyphoto').onclick=function(){onlyPhotoExport=!onlyPhotoExport;this.classList.toggle('on',onlyPhotoExport);saveSettings();toast(onlyPhotoExport?'จะออกเฉพาะจุดที่มีรูป':'จะออกทุกจุด');};
+document.getElementById('opt-clear').onclick=()=>{if(confirm('ล้างข้อมูลและรูปทั้งหมด?')){clearAll(false);sheet.classList.remove('show');}};
+document.getElementById('opt-backup').onclick=async function(){
+  try{
+    const photos={};
+    for(const u in photoBlob){photos[STABLE[u]]=await blobToDataURL(photoBlob[u]);}
+    const metaOut={};for(const u in meta){const m=meta[u];if(m&&(m.result||m.note))metaOut[STABLE[u]]=m;}
+    const data={version:2,app:'safetrack-ef002',ts:new Date().toISOString(),meta:metaOut,photos:photos};
+    const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download='safetrack-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    sheet.classList.remove('show');toast('สำรองข้อมูลแล้ว');
+  }catch(err){toast('สำรองข้อมูลไม่สำเร็จ: '+(err&&err.message||err));}
 };
 document.getElementById('opt-restore').onclick=()=>document.getElementById('restore-file').click();
 document.getElementById('restore-file').onchange=e=>{
-  const f=e.target.files[0];if(!f)return;const rd=new FileReader();
-  rd.onload=()=>{try{state=JSON.parse(rd.result);save();render();toast('กู้คืนข้อมูลแล้ว');sheet.classList.remove('show');}catch(err){toast('ไฟล์ไม่ถูกต้อง');}};
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  if(!confirm('การกู้คืนจะเขียนทับข้อมูลปัจจุบันทั้งหมด ดำเนินการต่อหรือไม่?'))return;
+  const rd=new FileReader();
+  rd.onload=async ()=>{
+    try{
+      const o=JSON.parse(rd.result);
+      if(!o||typeof o!=='object')throw new Error('โครงสร้างไฟล์ไม่ถูกต้อง');
+      await clearAll(true);
+      if(o.version===2&&o.meta&&typeof o.meta==='object'){
+        for(const sid in o.meta){const u=STABLE2UID[sid];const v=o.meta[sid];if(u&&v&&typeof v==='object')meta[u]={result:v.result||null,note:typeof v.note==='string'?v.note:''};}
+        if(o.photos&&typeof o.photos==='object'){for(const sid in o.photos){const u=STABLE2UID[sid];const d=o.photos[sid];if(u&&typeof d==='string'&&d.indexOf('data:')===0)await setPhoto(u,dataURLToBlob(d));}}
+      }else{
+        // legacy backup: positional keys with inline .photo dataURLs
+        for(const u in o){if(!/^s\d+p\d+$/.test(u)||!(u in STABLE))continue;const it=o[u]||{};const mm={};if(it.result)mm.result=it.result;if(typeof it.note==='string')mm.note=it.note;if(mm.result||mm.note)meta[u]=mm;if(typeof it.photo==='string'&&it.photo.indexOf('data:')===0)await setPhoto(u,dataURLToBlob(it.photo));}
+      }
+      saveMeta();render();sheet.classList.remove('show');toast('กู้คืนข้อมูลแล้ว');
+    }catch(err){toast('ไฟล์ไม่ถูกต้อง: '+(err&&err.message||err));}
+  };
   rd.readAsText(f);
 };
 
@@ -474,11 +649,11 @@ document.getElementById('btn-export').onclick=async function(){
     // merge categories with same name (template repeats some) — group by category text
     const catMap={};const catOrder=[];
     TEMPLATE_DATA.forEach((cat,si)=>{
-      const name=cat.category.replace('การตรวจสอบ','').trim();
+      const name=cat.category.trim();
       if(!catMap[name]){catMap[name]={total:0,ok:0,bad:0,notes:[]};catOrder.push(name);}
       cat.points.forEach((p,pi)=>{
         catMap[name].total++;
-        const st=state['s'+si+'p'+pi]||{};
+        const st=meta[uid(si,pi)]||{};
         if(st.result==='pass')catMap[name].ok++;
         if(st.result==='fail'){catMap[name].bad++;
           const label=(p.code||p.location||('จุดที่ '+(pi+1)));
@@ -491,9 +666,9 @@ document.getElementById('btn-export').onclick=async function(){
       const cell=(t,al)=>({text:String(t),options:{align:al||'center',valign:'middle',fontFace:'Angsana New',fontSize:13,color:'1a212b'}});
       rows.push([
         {text:name,options:{align:'left',valign:'middle',fontFace:'Angsana New',fontSize:13,bold:true,color:'1a212b'}},
-        cell(c.total||'-'),
-        cell(c.ok||(c.ok===0&&c.bad===0?'-':0)),
-        cell(c.bad||(c.bad===0?'':0)),
+        cell(c.total),
+        cell(c.ok),
+        cell(c.bad>0?c.bad:''),
         {text:c.notes.join('\n'),options:{align:'left',valign:'middle',fontFace:'Angsana New',fontSize:12,color:'c0392b'}}
       ]);
     });
@@ -507,13 +682,11 @@ document.getElementById('btn-export').onclick=async function(){
     });
 
     // ===== PER-POINT PHOTO SLIDES =====
-    TEMPLATE_DATA.forEach(cat=>{
-      let pts=cat.points.map((p,pi)=>({p,pi}));
-      if(onlyPhotoExport)pts=pts.filter(({p},i)=>true); // filter below by photo
-      // build list of points to include
-      const items=cat.points.map((p,pi)=>({p,st:state['s'+TEMPLATE_DATA.indexOf(cat)+'p'+pi]||{}}))
-        .filter(it=> onlyPhotoExport ? !!it.st.photo : true);
-      if(items.length===0 && onlyPhotoExport) return;
+    for(let si=0; si<TEMPLATE_DATA.length; si++){
+      const cat=TEMPLATE_DATA[si];
+      const items=cat.points.map((p,pi)=>({p:p,id:uid(si,pi)}))
+        .filter(it=> onlyPhotoExport ? !!photoURL[it.id] : true);
+      if(items.length===0 && onlyPhotoExport) continue;
       for(let off=0; off<Math.max(items.length,1); off+=PER){
         const chunk=items.slice(off,off+PER);
         pageNo++;
@@ -522,11 +695,13 @@ document.getElementById('btn-export').onclick=async function(){
         s.addText('รายงานผลการดำเนินงานงานหน่วยงาน',{x:0.44,y:0.10,w:12.45,h:0.55,fontSize:24,bold:true,align:'center',color:'1a212b',fontFace:'Angsana New'});
         s.addText(cat.category,{x:0.44,y:0.75,w:12.45,h:0.7,fontSize:26,bold:true,align:'center',color:'c0392b',fontFace:'Angsana New'});
         s.addText(String(pageNo),{x:11.8,y:6.95,w:1.2,h:0.4,fontSize:14,bold:true,align:'right',color:'333333'});
-        chunk.forEach((it,k)=>{
+        for(let k=0;k<chunk.length;k++){
+          const it=chunk[k];
           const col=k%COLS, row=Math.floor(k/COLS);
           const x=x0+col*(PW+GAPX), y=rowY[row];
-          if(it.st.photo){
-            s.addImage({data:it.st.photo,x:x,y:y,w:PW,h:PH});
+          if(photoBlob[it.id]){
+            const dataUrl=await blobToDataURL(photoBlob[it.id]);
+            s.addImage({data:dataUrl,x:x,y:y,w:PW,h:PH});
           }else{
             s.addShape(pptx.ShapeType.rect,{x:x,y:y,w:PW,h:PH,fill:{color:'F0F0F0'},line:{color:'BBBBBB',width:1}});
             s.addText('(ใส่รูปภาพ)',{x:x,y:y+PH/2-0.2,w:PW,h:0.4,fontSize:11,align:'center',color:'999999'});
@@ -534,9 +709,9 @@ document.getElementById('btn-export').onclick=async function(){
           const ordTxt=it.p.order?(it.p.order+'. '):'';
           const cap=ordTxt+(it.p.code?it.p.code:'')+(it.p.code&&it.p.location?'\n':'')+(it.p.location||'');
           s.addText(cap,{x:x-0.06,y:y+PH+0.02,w:PW+0.12,h:0.55,fontSize:12,align:'center',valign:'top',color:'1a212b',fontFace:'Angsana New',bold:true,lineSpacing:13});
-        });
+        }
       }
-    });
+    }
 
     const fname='รายงานอุปกรณ์ฉุกเฉิน-'+new Date().toISOString().slice(0,10)+'.pptx';
     await pptx.writeFile({fileName:fname});
@@ -545,19 +720,30 @@ document.getElementById('btn-export').onclick=async function(){
   finally{btn.disabled=false;btn.innerHTML=orig;}
 };
 
-try{
+function showBanner(msg){
+  var w=document.createElement('div');
+  w.style.cssText='background:#3a2e12;color:#ffcf66;padding:10px 16px;font-size:12px;border-bottom:1px solid #5a4718;line-height:1.4';
+  w.textContent=msg;
+  var bar=document.querySelector('.bar');
+  bar.parentNode.insertBefore(w,bar);
+}
+async function init(){
+  loadSettings();
+  document.getElementById('opt-autonext').classList.toggle('on',autoNext);
+  document.getElementById('opt-onlyphoto').classList.toggle('on',onlyPhotoExport);
+  await openDB();
+  await loadAll();
   render();
   if(!STORAGE_OK){
-    var w=document.createElement('div');
-    w.style.cssText='background:#3a2e12;color:#ffcf66;padding:10px 16px;font-size:12px;border-bottom:1px solid #5a4718;line-height:1.4';
-    w.innerHTML='⚠️ ตัวเปิดนี้ไม่อนุญาตให้บันทึกถาวร — ข้อมูล/รูปจะหายเมื่อปิดหน้านี้ แนะนำให้เปิดด้วย Safari หรือ Chrome และกด “สำรองข้อมูล” ในเมนู ⋯ ก่อนปิด';
-    var bar=document.querySelector('.bar');
-    bar.parentNode.insertBefore(w,bar);
+    showBanner('⚠️ ตัวเปิดนี้ไม่อนุญาตให้บันทึกถาวร — ข้อมูล/รูปจะหายเมื่อปิดหน้านี้ แนะนำให้เปิดด้วย Safari หรือ Chrome และกด “สำรองข้อมูล” ในเมนู ⋯ ก่อนปิด');
+  }else if(!idbOK){
+    showBanner('⚠️ เบราว์เซอร์นี้เก็บรูปภาพถาวรไม่ได้ — ผลตรวจถูกบันทึกไว้ แต่ “รูปภาพ” จะหายเมื่อปิดหน้านี้ แนะนำกด “สำรองข้อมูล” ในเมนู ⋯ ก่อนปิด');
   }
-}catch(err){
-  document.getElementById('list').innerHTML='<div style="padding:30px 16px;color:#e0454e;font-size:14px">เกิดข้อผิดพลาดในการแสดงรายการ:<br>'+err.message+'</div>';
-  console.error(err);
 }
+init().catch(function(err){
+  document.getElementById('list').innerHTML='<div style="padding:30px 16px;color:#e0454e;font-size:14px">เกิดข้อผิดพลาดในการเริ่มต้น:<br>'+esc(err&&err.message||err)+'</div>';
+  console.error(err);
+});
 </script>
 </body>
 </html>
