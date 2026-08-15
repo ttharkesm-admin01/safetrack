@@ -55,13 +55,20 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
 .prog .pct{font-size:11px;color:var(--mut);margin-top:5px;text-align:center}
 .prog .pct b{color:var(--txt)}
 .empty{padding:50px 24px;text-align:center;color:var(--mut);font-size:14px}
+/* storage-health banner — shown only while data is actually at risk */
+.pbanner{background:#fff6e0;color:#7a5200;padding:10px 16px;font-size:12px;border-bottom:1px solid #f0dca8;line-height:1.45}
 .bar{padding:0 16px 8px}
+.searchwrap{position:relative}
+.searchwrap input{padding-right:42px!important}
+#search-clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:30px;height:30px;border:none;border-radius:50%;background:var(--panel2);color:var(--mut);font-size:13px;cursor:pointer;display:grid;place-items:center;padding:0;font-family:inherit}
+#search-clear[hidden]{display:none}
+#search-clear:active{background:rgba(24,135,68,.12);color:var(--green2)}
 .bar input{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--txt);padding:12px 14px;border-radius:12px;font-size:14px;font-family:inherit;box-shadow:0 1px 3px rgba(20,50,30,.05)}
 .bar input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 2px rgba(24,135,68,.18)}
 .bar input::placeholder{color:var(--mut)}
 .cat{margin:8px 0}
-.cathead{padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line);position:sticky;top:72px;z-index:10}
-.cathead .chev{color:var(--green)}
+/* --topbar-h วัดจากความสูงจริงตอนรัน — หัวข้ออาจขึ้นบรรทัดใหม่บนจอแคบ ค่าคงที่จึงเพี้ยน */
+.cathead{padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line);position:sticky;top:var(--topbar-h,76px);z-index:10}
 .cathead .ct{font-weight:700;font-size:13.5px;flex:1;color:var(--green2)}
 .cathead .cn{font-size:11px;color:var(--mut);background:var(--panel2);padding:3px 9px;border-radius:20px}
 .cathead .cn-ok{color:#fff;background:var(--pass)}
@@ -134,6 +141,10 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
 .sheet .opt.danger{color:var(--fail);border-color:rgba(220,58,67,.35);background:rgba(220,58,67,.05)}
 .sheet .opt.danger svg{color:var(--fail)}
 .sheet .opt.on{border-color:var(--green);background:rgba(24,135,68,.1);color:var(--green2)}
+/* read-only info row (storage usage) — looks like an option but isn't tappable */
+.sheet .opt.info{cursor:default;font-weight:500;font-size:12.5px;color:var(--mut);background:transparent;border-style:dashed}
+.sheet .opt.info:active{transform:none;background:transparent;border-color:var(--line)}
+.sheet .opt.warn{color:#7a5200;border-color:#e6c67a;background:#fff6e0}
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#000;color:#fff;padding:11px 20px;border-radius:30px;font-size:13px;z-index:60;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90%;text-align:center}
 .toast.show{opacity:.95}
 .lightbox{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:20px}
@@ -196,7 +207,7 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
   <div class="pct" id="prog-pct">ตรวจแล้ว <b>0</b> จาก <b>0</b> จุด</div>
 </div>
 
-<div class="bar"><input id="search" placeholder="ค้นหา รหัส / ตำแหน่ง / ประเภท…"></div>
+<div class="bar"><div class="searchwrap"><input id="search" placeholder="ค้นหา รหัส / ตำแหน่ง / ประเภท…"><button id="search-clear" aria-label="ล้างคำค้นหา" hidden>✕</button></div></div>
 
 <div id="list"></div>
 
@@ -227,8 +238,10 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
       <button class="opt" id="opt-backup"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>สำรองข้อมูล</button>
       <button class="opt" id="opt-restore"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 21V9m0 0l-4 4m4-4l4 4M4 7V5a2 2 0 012-2h12a2 2 0 012 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>กู้คืนข้อมูล</button>
     </div>
+    <div class="row" id="row-orphan" style="display:none"><button class="opt" id="opt-orphan"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m2 0v12a2 2 0 01-2 2H8a2 2 0 01-2-2V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="orphan-label">ล้างรูปกำพร้า</span></button></div>
     <div class="row"><button class="opt danger" id="opt-clear"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m2 0v12a2 2 0 01-2 2H8a2 2 0 01-2-2V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>ล้างข้อมูลทั้งหมด</button></div>
-    <input type="file" id="restore-file" accept="application/json" style="display:none">
+    <div class="row"><div class="opt info" id="opt-storage">พื้นที่เก็บข้อมูล: กำลังตรวจสอบ…</div></div>
+    <input type="file" id="restore-file" accept=".zip,.json,application/zip,application/json" style="display:none">
   </div>
 </div>
 
@@ -269,12 +282,16 @@ TEMPLATE_DATA.forEach((c,si)=>c.points.forEach((p,pi)=>{
 
 // ---- in-memory model ----
 let meta={};            // uid -> {result, note}
-const photoBlob={};     // uid -> Blob (compressed JPEG)
-const photoURL={};      // uid -> object URL (for <img>/lightbox)
+let orphanMeta={};      // stable id ที่ template ปัจจุบันไม่รู้จัก — เก็บไว้ดิบ ๆ ห้ามทิ้ง
+const photoKeys=new Set();  // uid ที่ "มีรูป" — แหล่งความจริงว่าจุดไหนมีรูปแล้ว
+const photoBlob={};     // uid -> Blob — โหมด fallback (ไม่มี IDB) หรือ cache ชั่วคราวรอแสดงผล
+const photoURL={};      // uid -> object URL ที่ยังมีชีวิต (จำกัดจำนวนด้วย LRU)
+let orphanPhotoKeys=[]; // stable id ของรูปใน IDB ที่ template ไม่รู้จักแล้ว
 let onlyPhotoExport=false;
 let activeFilter='all'; // all | pending | pass | fail
 let autoNext=true;      // jump to next point after marking result
-let metaPersistOK=true, photoPersistOK=true;
+const collapsedCats=new Set();  // ดัชนีหมวดที่ถูกยุบ — เก็บแยกจาก DOM เพราะ render() สร้าง .cat ใหม่ทุกครั้ง
+let metaPersistOK=true, photoPersistOK=true, persisted=false;
 
 // ---- IndexedDB: photos live here (localStorage is ~5MB — far too small for ~195 images) ----
 let db=null, idbOK=false;
@@ -282,7 +299,13 @@ function openDB(){return new Promise(function(res){
   try{
     const r=indexedDB.open('safetrack',1);
     r.onupgradeneeded=function(){r.result.createObjectStore('photos');};
-    r.onsuccess=function(){db=r.result;idbOK=true;res();};
+    r.onsuccess=function(){
+      db=r.result;idbOK=true;
+      // another tab upgrading the DB would block us — close and fall back rather than hang
+      db.onversionchange=function(){try{db.close();}catch(e){}db=null;idbOK=false;updatePersistBanner();};
+      db.onclose=function(){db=null;idbOK=false;updatePersistBanner();};
+      res();
+    };
     r.onerror=function(){idbOK=false;res();};
     r.onblocked=function(){idbOK=false;res();};
   }catch(e){idbOK=false;res();}
@@ -290,46 +313,208 @@ function openDB(){return new Promise(function(res){
 function idbPut(key,val){return new Promise(function(res,rej){const tx=db.transaction('photos','readwrite');tx.objectStore('photos').put(val,key);tx.oncomplete=function(){res();};tx.onerror=function(){rej(tx.error);};tx.onabort=function(){rej(tx.error||new Error('abort'));};});}
 function idbDel(key){return new Promise(function(res,rej){const tx=db.transaction('photos','readwrite');tx.objectStore('photos').delete(key);tx.oncomplete=function(){res();};tx.onerror=function(){rej(tx.error);};});}
 function idbClear(){return new Promise(function(res,rej){const tx=db.transaction('photos','readwrite');tx.objectStore('photos').clear();tx.oncomplete=function(){res();};tx.onerror=function(){rej(tx.error);};});}
-function idbAll(){return new Promise(function(res){const out=[];try{const tx=db.transaction('photos','readonly');const cur=tx.objectStore('photos').openCursor();cur.onsuccess=function(e){const c=e.target.result;if(c){out.push({key:c.key,val:c.value});c.continue();}else res(out);};cur.onerror=function(){res(out);};}catch(e){res(out);}});}
+function idbGet(key){return new Promise(function(res,rej){try{const tx=db.transaction('photos','readonly');const r=tx.objectStore('photos').get(key);r.onsuccess=function(){res(r.result);};r.onerror=function(){rej(r.error);};}catch(e){rej(e);}});}
+// keys only — loading every Blob at startup would pin ~40–80MB of JPEGs in RAM
+function idbAllKeys(){return new Promise(function(res){const out=[];try{const tx=db.transaction('photos','readonly');const cur=tx.objectStore('photos').openKeyCursor();cur.onsuccess=function(e){const c=e.target.result;if(c){out.push(c.key);c.continue();}else res(out);};cur.onerror=function(){res(out);};}catch(e){res(out);}});}
 
 // ---- blob / dataURL / escape helpers ----
 function dataURLToBlob(d){const i=d.indexOf(',');const mime=(d.slice(5,i).split(';')[0])||'image/jpeg';const bin=atob(d.slice(i+1));const u8=new Uint8Array(bin.length);for(let j=0;j<bin.length;j++)u8[j]=bin.charCodeAt(j);return new Blob([u8],{type:mime});}
 function blobToDataURL(b){return new Promise(function(res,rej){const r=new FileReader();r.onload=function(){res(r.result);};r.onerror=function(){rej(r.error||new Error('อ่านรูปไม่สำเร็จ'));};r.readAsDataURL(b);});}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
-// ---- persistence ----
-function saveMeta(){
-  const out={};
-  for(const u in meta){const m=meta[u];if(m&&(m.result||m.note))out[STABLE[u]]=m;}
-  try{
-    const s=JSON.stringify(out);
-    if(STORAGE_OK)window.localStorage.setItem(META_KEY,s);else memStore[META_KEY]=s;
-    metaPersistOK=true;
-  }catch(e){metaPersistOK=false;toast('⚠️ บันทึกข้อมูลไม่สำเร็จ ('+(e&&e.name||'error')+') — กรุณาสำรองข้อมูล');}
+// ---- ZIP (โหมด STORE ไม่บีบอัด) — ใช้กับไฟล์สำรองข้อมูล ----
+// เขียนเองเพราะไม่มี build step และไฟล์สำรอง "ต้อง" ทำงานตอนออฟไลน์ได้ จึงโหลดไลบรารีจาก CDN ไม่ได้
+// JPEG บีบอัดมาแล้ว STORE จึงไม่เสียอะไร และตัด base64 ที่เคยทำให้ไฟล์โต 33% ทิ้งไปด้วย
+const CRC_TABLE=(function(){const t=new Uint32Array(256);
+  for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}
+  return t;})();
+function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC_TABLE[(c^u8[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function zipBuf(len){const b=new Uint8Array(len);let o=0;return{b:b,
+  w16:function(v){b[o++]=v&255;b[o++]=(v>>>8)&255;},
+  w32:function(v){b[o++]=v&255;b[o++]=(v>>>8)&255;b[o++]=(v>>>16)&255;b[o++]=(v>>>24)&255;},
+  raw:function(x){b.set(x,o);o+=x.length;}};}
+// entries: [{name, blob}] — อ่าน blob ทีละใบเพื่อคิด CRC แล้วปล่อยทิ้ง
+// ตัว Blob ใส่เข้า new Blob([...]) โดยอ้างอิง ไม่เคยกองรวมกันในแรม
+async function makeZip(entries,onProgress){
+  const parts=[],central=[];let offset=0;const d=new Date();
+  const dTime=((d.getHours()<<11)|(d.getMinutes()<<5)|((d.getSeconds()/2)|0))&0xFFFF;
+  const dDate=(((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate())&0xFFFF;
+  for(let i=0;i<entries.length;i++){
+    const e=entries[i],name=new TextEncoder().encode(e.name);
+    const u8=new Uint8Array(await e.blob.arrayBuffer());
+    const crc=crc32(u8),size=u8.length;
+    const lh=zipBuf(30+name.length);
+    lh.w32(0x04034b50);lh.w16(20);lh.w16(0x0800);lh.w16(0);   // 0x0800 = ชื่อไฟล์เป็น UTF-8
+    lh.w16(dTime);lh.w16(dDate);lh.w32(crc);lh.w32(size);lh.w32(size);
+    lh.w16(name.length);lh.w16(0);lh.raw(name);
+    parts.push(lh.b,e.blob);
+    const ch=zipBuf(46+name.length);
+    ch.w32(0x02014b50);ch.w16(20);ch.w16(20);ch.w16(0x0800);ch.w16(0);
+    ch.w16(dTime);ch.w16(dDate);ch.w32(crc);ch.w32(size);ch.w32(size);
+    ch.w16(name.length);ch.w16(0);ch.w16(0);ch.w16(0);ch.w16(0);ch.w32(0);ch.w32(offset);
+    ch.raw(name);
+    central.push(ch.b);
+    offset+=lh.b.length+size;
+    if(onProgress)onProgress(i+1,entries.length);
+  }
+  const cdSize=central.reduce(function(n,c){return n+c.length;},0);
+  const eo=zipBuf(22);
+  eo.w32(0x06054b50);eo.w16(0);eo.w16(0);
+  eo.w16(entries.length);eo.w16(entries.length);eo.w32(cdSize);eo.w32(offset);eo.w16(0);
+  return new Blob(parts.concat(central,[eo.b]),{type:'application/zip'});
 }
-function saveSettings(){lsSet(SETT_KEY,JSON.stringify({autoNext:autoNext,onlyPhoto:onlyPhotoExport,filter:activeFilter}));}
-function loadSettings(){try{const s=JSON.parse(lsGet(SETT_KEY)||'{}');if(typeof s.autoNext==='boolean')autoNext=s.autoNext;if(typeof s.onlyPhoto==='boolean')onlyPhotoExport=s.onlyPhoto;if(s.filter)activeFilter=s.filter;}catch(e){}}
+// อ่านเฉพาะสารบัญ — เนื้อของแต่ละ entry คืนเป็น Blob slice ซึ่งเป็น "มุมมอง" ไม่ใช่สำเนา
+// ไฟล์สำรองขนาด 100MB จึงไม่เคยถูกโหลดเข้าแรมทั้งก้อน
+async function readZip(file){
+  if(file.size<22)throw new Error('ไฟล์เล็กเกินกว่าจะเป็น ZIP');
+  const tailLen=Math.min(file.size,66000);
+  const tail=new Uint8Array(await file.slice(file.size-tailLen).arrayBuffer());
+  let p=-1;
+  for(let i=tail.length-22;i>=0;i--)
+    if(tail[i]===0x50&&tail[i+1]===0x4b&&tail[i+2]===0x05&&tail[i+3]===0x06){p=i;break;}
+  if(p<0)throw new Error('หาสารบัญของไฟล์ ZIP ไม่เจอ (ไฟล์อาจไม่ครบ)');
+  const dv=new DataView(tail.buffer,tail.byteOffset);
+  const count=dv.getUint16(p+10,true),cdSize=dv.getUint32(p+12,true),cdOff=dv.getUint32(p+16,true);
+  if(cdOff+cdSize>file.size)throw new Error('ไฟล์ ZIP ไม่ครบ (สารบัญชี้เกินขนาดไฟล์)');
+  const cd=new Uint8Array(await file.slice(cdOff,cdOff+cdSize).arrayBuffer());
+  const cv=new DataView(cd.buffer,cd.byteOffset);
+  const out=[];let o=0;
+  for(let i=0;i<count;i++){
+    if(o+46>cd.length||cv.getUint32(o,true)!==0x02014b50)throw new Error('สารบัญของไฟล์ ZIP เสียหาย');
+    const crc=cv.getUint32(o+16,true),size=cv.getUint32(o+24,true);
+    const nL=cv.getUint16(o+28,true),xL=cv.getUint16(o+30,true),cL=cv.getUint16(o+32,true);
+    const lho=cv.getUint32(o+42,true);
+    out.push({name:new TextDecoder().decode(cd.subarray(o+46,o+46+nL)),crc:crc,size:size,lho:lho});
+    o+=46+nL+xL+cL;
+  }
+  for(const e of out){
+    const lh=new Uint8Array(await file.slice(e.lho,e.lho+30).arrayBuffer());
+    if(lh.length<30)throw new Error('ไฟล์ ZIP ไม่ครบ');
+    const lv=new DataView(lh.buffer,lh.byteOffset);
+    if(lv.getUint32(0,true)!==0x04034b50)throw new Error('หัวข้อมูลใน ZIP เสียหาย');
+    const start=e.lho+30+lv.getUint16(26,true)+lv.getUint16(28,true);
+    if(start+e.size>file.size)throw new Error('ไฟล์ ZIP ไม่ครบ (ข้อมูลถูกตัดกลางคัน)');
+    e.blob=file.slice(start,start+e.size);
+    e.map=null;
+  }
+  return out;
+}
+async function zipEntryBlob(e){   // อ่านทีละใบพร้อมตรวจ CRC เพื่อจับไฟล์ที่เสีย
+  const u8=new Uint8Array(await e.blob.arrayBuffer());
+  if(crc32(u8)!==e.crc)throw new Error('ข้อมูลในไฟล์สำรองเสียหาย ('+e.name+')');
+  return new Blob([u8],{type:/\.jpe?g$/i.test(e.name)?'image/jpeg':'application/octet-stream'});
+}
+
+// ---- persistence ----
+function metaSnapshot(){
+  // orphanMeta ต้องถูกเขียนกลับเสมอ ไม่งั้นการแก้ TEMPLATE_DATA จะลบผลตรวจเดิมทิ้งถาวร
+  const out={};
+  for(const sid in orphanMeta)out[sid]=orphanMeta[sid];
+  for(const u in meta){const m=meta[u];if(m&&(m.result||m.note))out[STABLE[u]]=m;}
+  return out;
+}
+function saveMeta(){
+  try{
+    const s=JSON.stringify(metaSnapshot());
+    if(STORAGE_OK)window.localStorage.setItem(META_KEY,s);else memStore[META_KEY]=s;
+    if(!metaPersistOK){metaPersistOK=true;updatePersistBanner();}
+  }catch(e){
+    metaPersistOK=false;updatePersistBanner();
+    toast(e&&e.name==='QuotaExceededError'?'⚠️ พื้นที่เก็บข้อมูลเต็ม — กรุณาสำรองข้อมูลแล้วล้างข้อมูลเก่า':'⚠️ บันทึกข้อมูลไม่สำเร็จ ('+(e&&e.name||'error')+') — กรุณาสำรองข้อมูล');
+  }
+}
+// พิมพ์หมายเหตุทีละตัวอักษรไม่ควร stringify ทั้งก้อน + เขียน localStorage แบบ sync ทุกครั้ง
+let _metaT=null;
+function saveMetaSoon(){clearTimeout(_metaT);_metaT=setTimeout(function(){_metaT=null;saveMeta();},400);}
+function flushMeta(){if(_metaT){clearTimeout(_metaT);_metaT=null;saveMeta();}}
+function saveSettings(){lsSet(SETT_KEY,JSON.stringify({autoNext:autoNext,onlyPhoto:onlyPhotoExport,filter:activeFilter,collapsed:[...collapsedCats]}));}
+function loadSettings(){try{const s=JSON.parse(lsGet(SETT_KEY)||'{}');if(typeof s.autoNext==='boolean')autoNext=s.autoNext;if(typeof s.onlyPhoto==='boolean')onlyPhotoExport=s.onlyPhoto;if(s.filter)activeFilter=s.filter;if(Array.isArray(s.collapsed))s.collapsed.forEach(function(i){if(typeof i==='number')collapsedCats.add(i);});}catch(e){}}
 
 // ---- photo ops ----
-function setPhoto(id,blob){
-  if(photoURL[id])URL.revokeObjectURL(photoURL[id]);
-  photoBlob[id]=blob;photoURL[id]=URL.createObjectURL(blob);
-  if(idbOK)return idbPut(STABLE[id],blob).catch(function(){photoPersistOK=false;toast('⚠️ เซฟรูปลงเครื่องไม่สำเร็จ — กรุณาสำรองข้อมูล');});
-  photoPersistOK=false;return Promise.resolve();
+// รูปทั้งชุดคือ ~40–80MB จึงถือ object URL ไว้แค่ไม่กี่ใบ แล้วโหลดที่เหลือจาก IDB เมื่อเลื่อนถึง
+const MAX_LIVE_URL=30;
+const lru=[];              // uid เรียงจากใช้เก่าสุด -> ล่าสุด
+const visible=new Set();   // uid ที่การ์ดอยู่ในจอตอนนี้ — ห้ามถอด URL ทิ้ง
+function touchLRU(id){
+  const i=lru.indexOf(id);if(i>=0)lru.splice(i,1);
+  lru.push(id);trimLRU();
 }
-function delPhoto(id){
-  if(photoURL[id]){URL.revokeObjectURL(photoURL[id]);delete photoURL[id];}
-  delete photoBlob[id];
-  if(idbOK)return idbDel(STABLE[id]).catch(function(){});
-  return Promise.resolve();
+function trimLRU(){
+  for(let i=0;i<lru.length&&lru.length>MAX_LIVE_URL;){
+    const id=lru[i];
+    if(visible.has(id)){i++;continue;}   // ยังอยู่ในจอ ข้ามไปตัวถัดไป
+    lru.splice(i,1);releaseURL(id);
+  }
+  sweepBlobCache();
+}
+// blob ที่ cache ไว้ตอนถ่ายรูปจะค้างถ้าการ์ดนั้นไม่เคยถูกเลื่อนมาแสดง (เช่นโดนตัวกรองซ่อนไว้)
+function sweepBlobCache(){
+  if(!idbOK)return;   // โหมด fallback: photoBlob คือที่เก็บจริง ห้ามล้าง
+  for(const id in photoBlob){if(!photoURL[id]&&!visible.has(id))delete photoBlob[id];}
+}
+function releaseURL(id){
+  if(!photoURL[id])return;
+  URL.revokeObjectURL(photoURL[id]);delete photoURL[id];
+  if(idbOK)delete photoBlob[id];        // fallback mode ต้องเก็บ blob ไว้ ไม่มีที่อื่นให้อ่านซ้ำ
+  const img=document.querySelector('.photo[data-id="'+id+'"] img');
+  if(img)img.removeAttribute('src');     // เลื่อนกลับมาเมื่อไหร่ observer จะโหลดใหม่เอง
+}
+async function ensurePhotoURL(id){
+  if(photoURL[id]){touchLRU(id);return photoURL[id];}
+  if(!photoKeys.has(id))return null;
+  let b=photoBlob[id];
+  if(!b&&idbOK){try{b=await idbGet(STABLE[id]);}catch(e){b=null;}}
+  if(!(b instanceof Blob))return null;
+  if(idbOK)delete photoBlob[id];         // object URL ถือ blob ไว้เองแล้ว ไม่ต้องเก็บซ้ำ
+  photoURL[id]=URL.createObjectURL(b);touchLRU(id);
+  return photoURL[id];
+}
+// อ่าน blob โดยไม่แตะ LRU — ใช้ตอน export/backup ที่วนทีละใบแล้วปล่อยทิ้งทันที
+async function readPhotoBlob(id){
+  if(photoBlob[id])return photoBlob[id];
+  if(!idbOK||!photoKeys.has(id))return null;
+  try{const b=await idbGet(STABLE[id]);return (b instanceof Blob)?b:null;}catch(e){return null;}
+}
+// cache=true ให้เก็บ blob ไว้ในแรมเพื่อแสดงผลทันที (ตอนผู้ใช้เพิ่งถ่ายรูป)
+async function setPhoto(id,blob,cache){
+  releaseURL(id);photoKeys.add(id);
+  if(idbOK){
+    try{
+      await idbPut(STABLE[id],blob);
+      if(cache)photoBlob[id]=blob;
+      if(!photoPersistOK){photoPersistOK=true;updatePersistBanner();}
+    }catch(e){
+      photoBlob[id]=blob;   // เซฟลงดิสก์ไม่ได้ อย่างน้อยยังอยู่ในแรมให้สำรองข้อมูลออกไปได้
+      photoPersistOK=false;updatePersistBanner();
+      toast(e&&e.name==='QuotaExceededError'?'⚠️ พื้นที่เก็บรูปเต็ม — กรุณาสำรองข้อมูลแล้วล้างข้อมูลเก่า':'⚠️ เซฟรูปลงเครื่องไม่สำเร็จ — กรุณาสำรองข้อมูล');
+    }
+  }else{
+    photoBlob[id]=blob;photoPersistOK=false;
+  }
+}
+async function delPhoto(id){
+  releaseURL(id);
+  delete photoBlob[id];photoKeys.delete(id);
+  const i=lru.indexOf(id);if(i>=0)lru.splice(i,1);
+  if(idbOK){try{await idbDel(STABLE[id]);}catch(e){}}
 }
 
 // ---- load + one-time migration from the old localStorage blob ----
 async function loadAll(){
-  // 1) new-format metadata
-  try{const raw=lsGet(META_KEY);if(raw){const sm=JSON.parse(raw)||{};for(const sid in sm){const u=STABLE2UID[sid];if(u)meta[u]=sm[sid];}}}catch(e){}
-  // 2) photos from IndexedDB
-  if(idbOK){const all=await idbAll();all.forEach(function(rec){const u=STABLE2UID[rec.key];if(u&&rec.val instanceof Blob){photoBlob[u]=rec.val;photoURL[u]=URL.createObjectURL(rec.val);}});}
+  // 1) new-format metadata — sid ที่ไม่รู้จักเก็บเข้า orphanMeta แทนที่จะทิ้ง
+  try{
+    const raw=lsGet(META_KEY);
+    if(raw){const sm=JSON.parse(raw)||{};
+      for(const sid in sm){const u=STABLE2UID[sid];if(u)meta[u]=sm[sid];else orphanMeta[sid]=sm[sid];}}
+  }catch(e){}
+  // 2) photos: อ่านแค่รายชื่อคีย์ ตัว Blob โหลดทีหลังเมื่อการ์ดเลื่อนเข้ามาในจอ
+  if(idbOK){
+    orphanPhotoKeys=[];
+    (await idbAllKeys()).forEach(function(k){
+      const u=STABLE2UID[k];
+      if(u)photoKeys.add(u);else orphanPhotoKeys.push(k);
+    });
+  }
   // 3) fold in any leftover legacy data (never overwrites newer values)
   if(lsGet(OLD_KEY))await migrateOld();
 }
@@ -340,9 +525,11 @@ async function migrateOld(){
     if(!/^s\d+p\d+$/.test(u)||!(u in STABLE))continue;
     const o=old[u]||{};
     if(!(u in meta)){const m={};if(o.result)m.result=o.result;if(o.note)m.note=o.note;if(m.result||m.note)meta[u]=m;}
-    if(!(u in photoBlob)&&typeof o.photo==='string'&&o.photo.indexOf('data:')===0){
-      try{const b=dataURLToBlob(o.photo);photoBlob[u]=b;photoURL[u]=URL.createObjectURL(b);
-        if(idbOK){await idbPut(STABLE[u],b);moved++;}else photoFail=true;
+    if(!photoKeys.has(u)&&typeof o.photo==='string'&&o.photo.indexOf('data:')===0){
+      try{
+        const b=dataURLToBlob(o.photo);
+        if(idbOK){await idbPut(STABLE[u],b);photoKeys.add(u);moved++;}
+        else{photoBlob[u]=b;photoKeys.add(u);photoFail=true;}
       }catch(e){photoFail=true;}
     }
   }
@@ -353,21 +540,29 @@ async function migrateOld(){
 }
 
 async function clearAll(silent){
-  meta={};
+  meta={};orphanMeta={};
   Object.keys(photoURL).forEach(function(u){URL.revokeObjectURL(photoURL[u]);delete photoURL[u];});
   Object.keys(photoBlob).forEach(function(u){delete photoBlob[u];});
+  photoKeys.clear();lru.length=0;visible.clear();orphanPhotoKeys=[];
   if(idbOK){try{await idbClear();}catch(e){}}
-  saveMeta();
-  if(!silent){render();toast('ล้างข้อมูลแล้ว');}
+  clearTimeout(_metaT);_metaT=null;saveMeta();
+  if(!silent){render();refreshStorageInfo();toast('ล้างข้อมูลแล้ว');}
 }
 
 function gotoNext(curId){
   const i=FLAT_IDS.indexOf(curId);if(i<0)return;
   for(let j=i+1;j<FLAT_IDS.length;j++){
     const el=document.querySelector('.photo[data-id="'+FLAT_IDS[j]+'"]');
-    if(el){const card=el.closest('.card');card.scrollIntoView({behavior:'smooth',block:'center'});
-      card.style.transition='box-shadow .3s';card.style.boxShadow='0 0 0 2px var(--green)';
-      setTimeout(function(){card.style.boxShadow='';},900);return;}
+    if(!el)continue;
+    const card=el.closest('.card'),cat=el.closest('.cat');
+    // การ์ดอยู่ใน .grid ที่ display:none ถ้าหมวดถูกยุบ — scrollIntoView จะเงียบสนิท ต้องกางก่อน
+    if(cat&&cat.classList.contains('collapsed')){
+      cat.classList.remove('collapsed');
+      collapsedCats.delete(+cat.dataset.si);saveSettings();
+    }
+    card.scrollIntoView({behavior:'smooth',block:'center'});
+    card.style.transition='box-shadow .3s';card.style.boxShadow='0 0 0 2px var(--green)';
+    setTimeout(function(){card.style.boxShadow='';},900);return;
   }
 }
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200)}
@@ -383,7 +578,7 @@ function catHeadHTML(si){
 }
 function cardHTML(si,pi){
   const id=uid(si,pi);const p=TEMPLATE_DATA[si].points[pi];const st=meta[id]||{};
-  const hasPhoto=!!photoURL[id];
+  const hasPhoto=photoKeys.has(id);
   const cls='card'+(st.result==='fail'?' issue':(hasPhoto&&st.result?' done':''));
   const ordTxt=p.order?('<span class="ord">'+esc(p.order)+'. </span>'):'';
   const codeTxt=p.code?esc(p.code):'(ไม่มีรหัส)';
@@ -391,8 +586,10 @@ function cardHTML(si,pi){
   const bTxt=st.result==='pass'?'ปกติ':(st.result==='fail'?'ไม่ปกติ':'รอตรวจ');
   const badge='<span class="badge '+bCls+'">'+bTxt+'</span>';
   const inner=
-    '<div class="photo" data-act="'+(hasPhoto?'view':'gallery')+'" data-id="'+id+'">'+
-      (hasPhoto?('<img src="'+photoURL[id]+'" alt="">'):
+    '<div class="photo" role="button" tabindex="0" aria-label="'+
+        esc((hasPhoto?'ดูรูปของ ':'เลือกรูปให้ ')+(p.code||'')+' '+(p.location||''))+'" '+
+        'data-act="'+(hasPhoto?'view':'gallery')+'" data-id="'+id+'">'+
+      (hasPhoto?('<img alt="" loading="lazy" decoding="async"'+(photoURL[id]?(' src="'+photoURL[id]+'"'):'')+'>'):
         ('<div class="ph">'+CAM_SVG+'แตะเพื่อเลือกรูป</div>'))+
       badge+
     '</div>'+
@@ -412,11 +609,40 @@ function cardHTML(si,pi){
     '</div>';
   return {cls:cls,inner:inner,id:id};
 }
+// ---- lazy photo loading: only cards on (or near) screen hold a decoded image ----
+let io=null;
+function setupIO(){
+  if(!window.IntersectionObserver)return;
+  io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      const id=en.target.dataset.id;if(!id)return;
+      if(en.isIntersecting){visible.add(id);loadPhotoInto(en.target);}
+      else{visible.delete(id);}
+    });
+    trimLRU();
+  },{rootMargin:'400px 0px'});
+}
+function observeCards(scope){
+  const nodes=(scope||document).querySelectorAll('.photo[data-id]');
+  if(io){nodes.forEach(function(el){io.observe(el);});return;}
+  nodes.forEach(function(el){visible.add(el.dataset.id);loadPhotoInto(el);}); // เบราว์เซอร์เก่า: โหลดทั้งหมด
+}
+async function loadPhotoInto(ph){
+  const id=ph.dataset.id;
+  if(!photoKeys.has(id))return;
+  const img=ph.querySelector('img');
+  if(!img||img.getAttribute('src'))return;
+  const u=await ensurePhotoURL(id);
+  if(u&&!img.getAttribute('src'))img.src=u;
+}
 // targeted updates — avoid rebuilding the whole 195-card list on every tap
 function rerenderCard(id){
   const ph=document.querySelector('.photo[data-id="'+id+'"]');if(!ph)return false;
   const card=ph.closest('.card');const m=/^s(\d+)p(\d+)$/.exec(id);if(!m)return false;
-  const cd=cardHTML(+m[1],+m[2]);card.className=cd.cls;card.innerHTML=cd.inner;return true;
+  if(io)io.unobserve(ph);
+  const cd=cardHTML(+m[1],+m[2]);card.className=cd.cls;card.innerHTML=cd.inner;
+  observeCards(card);
+  return true;
 }
 function refreshCatHead(si){const h=document.querySelector('.cat[data-si="'+si+'"] .cathead');if(h)h.innerHTML=catHeadHTML(si);}
 function refreshStats(){
@@ -436,7 +662,10 @@ function isFiltered(){return activeFilter!=='all'||((document.getElementById('se
 
 function render(){
   const q=(document.getElementById('search').value||'').toLowerCase().trim();
-  const list=document.getElementById('list');list.innerHTML='';
+  const list=document.getElementById('list');
+  if(io)io.disconnect();      // การ์ดเดิมกำลังจะถูกทิ้ง อย่าให้ observer ค้างอ้างถึง
+  visible.clear();
+  list.innerHTML='';
   let shown=0;
   TEMPLATE_DATA.forEach((cat,si)=>{
     const matchPts=cat.points.map((p,pi)=>({p,pi})).filter(({p,pi})=>{
@@ -449,7 +678,7 @@ function render(){
     });
     if(matchPts.length===0)return;
     shown+=matchPts.length;
-    const wrap=document.createElement('div');wrap.className='cat';wrap.dataset.si=si;
+    const wrap=document.createElement('div');wrap.className='cat'+(collapsedCats.has(si)?' collapsed':'');wrap.dataset.si=si;
     wrap.innerHTML='<div class="cathead">'+catHeadHTML(si)+'</div><div class="grid"></div>';
     const grid=wrap.querySelector('.grid');
     matchPts.forEach(({p,pi})=>{
@@ -463,7 +692,8 @@ function render(){
   if(shown===0){
     const msg=q?'ไม่พบรายการที่ค้นหา':(activeFilter==='pending'?'ตรวจครบทุกจุดแล้ว 🎉':'ไม่มีรายการในตัวกรองนี้');
     list.innerHTML='<div class="empty">'+esc(msg)+'</div>';
-  }
+  }else observeCards(list);
+  trimLRU();
 }
 
 // delegated events
@@ -472,7 +702,7 @@ document.getElementById('list').addEventListener('click',e=>{
   const act=el.dataset.act,id=el.dataset.id;
   if(act==='gallery'){pickPhoto(id,false);}
   else if(act==='camera'){pickPhoto(id,true);}
-  else if(act==='view'){const u=photoURL[id];if(u){document.getElementById('lb-img').src=u;document.getElementById('lightbox').classList.add('show');}}
+  else if(act==='view'){ensurePhotoURL(id).then(function(u){if(u){document.getElementById('lb-img').src=u;document.getElementById('lightbox').classList.add('show');}});}
   else if(act==='delphoto'){if(confirm('ลบรูปนี้?')){delPhoto(id).then(()=>{if(isFiltered())render();else if(!rerenderCard(id))render();});}}
   else if(act==='pass'||act==='fail'){
     meta[id]=meta[id]||{};
@@ -488,12 +718,38 @@ document.getElementById('list').addEventListener('click',e=>{
 document.getElementById('list').addEventListener('click',e=>{
   const h=e.target.closest('.cathead');if(!h)return;
   if(e.target.closest('[data-act]'))return;
-  h.parentElement.classList.toggle('collapsed');
+  const cat=h.parentElement,si=+cat.dataset.si;
+  const nowCollapsed=cat.classList.toggle('collapsed');
+  if(nowCollapsed)collapsedCats.add(si);else collapsedCats.delete(si);
+  saveSettings();
 });
+// ช่องรูปเป็น div จึงต้องรับ Enter/Space เองให้ใช้คีย์บอร์ดได้เหมือนปุ่ม
+document.getElementById('list').addEventListener('keydown',e=>{
+  if(e.key!=='Enter'&&e.key!==' ')return;
+  const ph=e.target.closest('.photo[data-act]');if(!ph)return;
+  e.preventDefault();ph.click();
+});
+// ช่องหมายเหตุตั้ง rows=1 — ยืดตามเนื้อหาเพื่อให้อ่านสิ่งที่พิมพ์ได้ (ข้อความนี้ไปโผล่ในรายงาน)
+const NOTE_MAX_H=120;
+function growNote(el){
+  el.style.height='auto';
+  // box-sizing:border-box ทำให้ height รวมเส้นขอบด้วย แต่ scrollHeight ไม่รวม — ต้องบวกคืน
+  const border=el.offsetHeight-el.clientHeight;
+  el.style.height=Math.min(el.scrollHeight+border,NOTE_MAX_H)+'px';
+}
 document.getElementById('list').addEventListener('input',e=>{
   const el=e.target.closest('[data-act="note"]');if(!el)return;
-  const id=el.dataset.id;meta[id]=meta[id]||{};meta[id].note=el.value;saveMeta();
+  growNote(el);
+  const id=el.dataset.id;meta[id]=meta[id]||{};meta[id].note=el.value;saveMetaSoon();
 });
+// ยืดครั้งแรกตอนโฟกัส — ไม่ทำตอน render เพราะจะบังคับ layout ทั้ง 195 ใบ
+document.getElementById('list').addEventListener('focusin',e=>{
+  const el=e.target.closest('[data-act="note"]');if(el)growNote(el);
+});
+// มือถือปิดแท็บทิ้งได้ทุกเมื่อ — ต้อง flush ที่ค้างอยู่ก่อนหน้าถูกเก็บ
+window.addEventListener('pagehide',flushMeta);
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')flushMeta();});
+window.addEventListener('beforeunload',function(e){if(persistRisk()){e.preventDefault();e.returnValue='';}});
 document.getElementById('lightbox').addEventListener('click',()=>document.getElementById('lightbox').classList.remove('show'));
 
 let pendingId=null;
@@ -504,8 +760,8 @@ function handleFile(inp){
   const id=pendingId;pendingId=null;
   toast('กำลังประมวลผลรูป…');
   resizeImageToBlob(f,1200,.82)
-    .then(blob=>setPhoto(id,blob))
-    .then(()=>{if(isFiltered())render();else if(!rerenderCard(id))render();toast('บันทึกรูปแล้ว');})
+    .then(blob=>setPhoto(id,blob,true))
+    .then(()=>{if(isFiltered())render();else if(!rerenderCard(id))render();refreshStorageInfo();toast('บันทึกรูปแล้ว');})
     .catch(err=>toast('ใส่รูปไม่สำเร็จ: '+(err&&err.message||err)));
 }
 document.getElementById('file-gallery').addEventListener('change',function(){handleFile(this);});
@@ -544,7 +800,20 @@ function resizeImageToBlob(file,maxW,quality){
 }
 
 let _searchT=null;
-document.getElementById('search').addEventListener('input',function(){clearTimeout(_searchT);_searchT=setTimeout(render,120);});
+const searchEl=document.getElementById('search'),searchClear=document.getElementById('search-clear');
+function syncSearchClear(){searchClear.hidden=!searchEl.value;}
+searchEl.addEventListener('input',function(){syncSearchClear();clearTimeout(_searchT);_searchT=setTimeout(render,120);});
+searchClear.addEventListener('click',function(){searchEl.value='';syncSearchClear();clearTimeout(_searchT);render();searchEl.focus();});
+
+// หัวหมวด sticky ต้องเกาะใต้ topbar พอดี — วัดความสูงจริงแทนการฮาร์ดโค้ด
+function syncTopbarHeight(){
+  const tb=document.querySelector('.topbar');
+  if(tb)document.documentElement.style.setProperty('--topbar-h',tb.offsetHeight+'px');
+}
+window.addEventListener('resize',syncTopbarHeight,{passive:true});
+window.addEventListener('orientationchange',syncTopbarHeight);
+// ฟอนต์ไทยโหลดทีหลังแล้วทำให้ความสูงเปลี่ยน ต้องวัดซ้ำ
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(syncTopbarHeight);
 
 // stat cards as status filters (tap again to clear)
 document.querySelectorAll('.stat').forEach(s=>{
@@ -564,51 +833,120 @@ totop.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 
 // sheet
 const sheet=document.getElementById('sheet');
-document.getElementById('btn-more').onclick=()=>sheet.classList.add('show');
+document.getElementById('btn-more').onclick=()=>{sheet.classList.add('show');refreshStorageInfo();};
 document.getElementById('opt-close').onclick=()=>sheet.classList.remove('show');
 sheet.addEventListener('click',e=>{if(e.target===sheet)sheet.classList.remove('show')});
 document.getElementById('opt-collapse').onclick=()=>{
   const cats=[...document.querySelectorAll('.cat')];
   const anyOpen=cats.some(c=>!c.classList.contains('collapsed'));
-  cats.forEach(c=>c.classList.toggle('collapsed',anyOpen));sheet.classList.remove('show');
+  cats.forEach(function(c){
+    c.classList.toggle('collapsed',anyOpen);
+    const si=+c.dataset.si;if(anyOpen)collapsedCats.add(si);else collapsedCats.delete(si);
+  });
+  saveSettings();sheet.classList.remove('show');
 };
 document.getElementById('opt-autonext').onclick=function(){autoNext=!autoNext;this.classList.toggle('on',autoNext);saveSettings();toast(autoNext?'เปิด Auto Next':'ปิด Auto Next');};
 document.getElementById('opt-onlyphoto').onclick=function(){onlyPhotoExport=!onlyPhotoExport;this.classList.toggle('on',onlyPhotoExport);saveSettings();toast(onlyPhotoExport?'จะออกเฉพาะจุดที่มีรูป':'จะออกทุกจุด');};
 document.getElementById('opt-clear').onclick=()=>{if(confirm('ล้างข้อมูลและรูปทั้งหมด?')){clearAll(false);sheet.classList.remove('show');}};
+// สำรองเป็น ZIP: รูปเก็บเป็น JPEG ดิบ (ไม่ผ่าน base64) และฝั่งกู้คืนอ่านทีละ entry ได้
 document.getElementById('opt-backup').onclick=async function(){
+  const btn=this,orig=btn.innerHTML;btn.disabled=true;
   try{
-    const photos={};
-    for(const u in photoBlob){photos[STABLE[u]]=await blobToDataURL(photoBlob[u]);}
-    const metaOut={};for(const u in meta){const m=meta[u];if(m&&(m.result||m.note))metaOut[STABLE[u]]=m;}
-    const data={version:2,app:'safetrack-ef002',ts:new Date().toISOString(),meta:metaOut,photos:photos};
-    const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+    flushMeta();
+    const items=[];                                        // [stable id, uid|null]
+    photoKeys.forEach(function(u){items.push([STABLE[u],u]);});
+    orphanPhotoKeys.forEach(function(k){items.push([k,null]);});  // รูปกำพร้าก็ต้องสำรองไปด้วย
+
+    // ชื่อ entry เป็นเลขลำดับ เพราะ stable id มี \x01 กับภาษาไทยอยู่ข้างใน — คู่กันไว้ใน meta.json
+    const entries=[],photoList=[];
+    let n=0;
+    for(const it of items){
+      const sid=it[0],u=it[1];
+      btn.innerHTML='กำลังอ่านรูป… '+(++n)+'/'+items.length;
+      let b=u?await readPhotoBlob(u):null;
+      if(!b&&idbOK){try{b=await idbGet(sid);}catch(e){b=null;}}
+      if(!(b instanceof Blob))continue;
+      const name='photos/'+String(photoList.length+1).padStart(4,'0')+'.jpg';
+      photoList.push({file:name,id:sid});
+      entries.push({name:name,blob:b});
+    }
+    const manifest={version:3,app:'safetrack-ef002',ts:new Date().toISOString(),
+                    meta:metaSnapshot(),photos:photoList};
+    entries.unshift({name:'meta.json',blob:new Blob([JSON.stringify(manifest)],{type:'application/json'})});
+
+    const blob=await makeZip(entries,function(i,t){btn.innerHTML='กำลังสำรอง… '+i+'/'+t;});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download='safetrack-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+    a.download='safetrack-backup-'+new Date().toISOString().slice(0,10)+'.zip';a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-    sheet.classList.remove('show');toast('สำรองข้อมูลแล้ว');
+    sheet.classList.remove('show');toast('สำรองข้อมูลแล้ว ('+photoList.length+' รูป)');
   }catch(err){toast('สำรองข้อมูลไม่สำเร็จ: '+(err&&err.message||err));}
+  finally{btn.disabled=false;btn.innerHTML=orig;}
 };
 document.getElementById('opt-restore').onclick=()=>document.getElementById('restore-file').click();
-document.getElementById('restore-file').onchange=e=>{
+
+function applyMetaMap(m){        // stable id -> {result,note}; sid ที่ไม่รู้จักเก็บเป็น orphan
+  for(const sid in m){const u=STABLE2UID[sid],v=m[sid];
+    if(!v||typeof v!=='object')continue;
+    if(u)meta[u]={result:v.result||null,note:typeof v.note==='string'?v.note:''};
+    else orphanMeta[sid]=v;}       // ไฟล์สำรองอาจมาจาก template คนละรุ่น — เก็บไว้ทั้งหมด
+}
+async function storePhotoBySid(sid,blob){
+  const u=STABLE2UID[sid];
+  if(u)await setPhoto(u,blob);
+  else if(idbOK){try{await idbPut(sid,blob);orphanPhotoKeys.push(sid);}catch(e){}}
+}
+
+document.getElementById('restore-file').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
-  if(!confirm('การกู้คืนจะเขียนทับข้อมูลปัจจุบันทั้งหมด ดำเนินการต่อหรือไม่?'))return;
-  const rd=new FileReader();
-  rd.onload=async ()=>{
-    try{
-      const o=JSON.parse(rd.result);
+  const btn=document.getElementById('opt-restore'),orig=btn.innerHTML;
+  try{
+    const magic=new Uint8Array(await f.slice(0,4).arrayBuffer());
+    const isZip=magic[0]===0x50&&magic[1]===0x4b&&magic[2]===0x03&&magic[3]===0x04;
+
+    if(isZip){
+      // อ่านสารบัญ + meta.json ให้ผ่านก่อน แล้วค่อยยืนยัน/ล้างของเดิม
+      // ถ้าไฟล์เสีย ผู้ใช้ต้องไม่เสียข้อมูลที่มีอยู่ไปด้วย
+      const zip=await readZip(f);
+      const metaEntry=zip.find(function(z){return z.name==='meta.json';});
+      if(!metaEntry)throw new Error('ไม่พบ meta.json ในไฟล์สำรอง');
+      const manifest=JSON.parse(await (await zipEntryBlob(metaEntry)).text());
+      if(!manifest||manifest.app!=='safetrack-ef002')throw new Error('ไม่ใช่ไฟล์สำรองของ SafeTrack');
+      const photos=Array.isArray(manifest.photos)?manifest.photos:[];
+      if(!confirm('การกู้คืนจะเขียนทับข้อมูลปัจจุบันทั้งหมด ดำเนินการต่อหรือไม่?\n(ไฟล์นี้มีรูป '+photos.length+' รูป)'))return;
+
+      btn.disabled=true;
+      await clearAll(true);
+      applyMetaMap(manifest.meta&&typeof manifest.meta==='object'?manifest.meta:{});
+      const byName={};zip.forEach(function(z){byName[z.name]=z;});
+      let n=0;
+      for(const p of photos){
+        const z=p&&byName[p.file];
+        if(!z||typeof p.id!=='string')continue;
+        btn.innerHTML='กำลังกู้คืน… '+(++n)+'/'+photos.length;
+        await storePhotoBySid(p.id,await zipEntryBlob(z));  // ทีละใบ แรมไม่บานตามขนาดไฟล์
+      }
+    }else{
+      // ไฟล์สำรองรูปแบบเดิม (v2 และ legacy) — ต้องกู้คืนได้เสมอ
+      if(!confirm('การกู้คืนจะเขียนทับข้อมูลปัจจุบันทั้งหมด ดำเนินการต่อหรือไม่?'))return;
+      const o=JSON.parse(await f.text());
       if(!o||typeof o!=='object')throw new Error('โครงสร้างไฟล์ไม่ถูกต้อง');
+      btn.disabled=true;
       await clearAll(true);
       if(o.version===2&&o.meta&&typeof o.meta==='object'){
-        for(const sid in o.meta){const u=STABLE2UID[sid];const v=o.meta[sid];if(u&&v&&typeof v==='object')meta[u]={result:v.result||null,note:typeof v.note==='string'?v.note:''};}
-        if(o.photos&&typeof o.photos==='object'){for(const sid in o.photos){const u=STABLE2UID[sid];const d=o.photos[sid];if(u&&typeof d==='string'&&d.indexOf('data:')===0)await setPhoto(u,dataURLToBlob(d));}}
+        applyMetaMap(o.meta);
+        if(o.photos&&typeof o.photos==='object'){
+          for(const sid in o.photos){const d=o.photos[sid];
+            if(typeof d!=='string'||d.indexOf('data:')!==0)continue;
+            await storePhotoBySid(sid,dataURLToBlob(d));}
+        }
       }else{
         // legacy backup: positional keys with inline .photo dataURLs
         for(const u in o){if(!/^s\d+p\d+$/.test(u)||!(u in STABLE))continue;const it=o[u]||{};const mm={};if(it.result)mm.result=it.result;if(typeof it.note==='string')mm.note=it.note;if(mm.result||mm.note)meta[u]=mm;if(typeof it.photo==='string'&&it.photo.indexOf('data:')===0)await setPhoto(u,dataURLToBlob(it.photo));}
       }
-      saveMeta();render();sheet.classList.remove('show');toast('กู้คืนข้อมูลแล้ว');
-    }catch(err){toast('ไฟล์ไม่ถูกต้อง: '+(err&&err.message||err));}
-  };
-  rd.readAsText(f);
+    }
+    saveMeta();render();refreshStorageInfo();sheet.classList.remove('show');toast('กู้คืนข้อมูลแล้ว');
+  }catch(err){toast('ไฟล์ไม่ถูกต้อง: '+(err&&err.message||err));}
+  finally{btn.disabled=false;btn.innerHTML=orig;}
 };
 
 // ====== EXPORT POWERPOINT ======
@@ -627,15 +965,14 @@ document.getElementById('btn-export').onclick=async function(){
     const GAPX=(13.333-0.14-COLS*PW)/(COLS-1); // distribute
     const x0=0.07, yTop=1.77, yBot=4.10;
     const rowY=[yTop,yBot];
-    let pageNo=0;
+    // เลขหน้าไม่ประทับตอนนี้ — ตารางสรุปใช้ autoPage ซึ่ง pptxgenjs แตกสไลด์เพิ่มเอง
+    // ถ้านับเองระหว่างทางจะเพี้ยนทั้งเล่ม (ดู stampPageNumbers ตอนท้าย)
 
     // ===== SUMMARY TABLE SLIDE (first page) =====
-    pageNo++;
     const sum=pptx.addSlide();
     sum.background={color:'FFFFFF'};
     sum.addText('รายงานผลการดำเนินงานงานหน่วยงาน',{x:0.44,y:0.10,w:12.45,h:0.55,fontSize:24,bold:true,align:'center',color:'1a212b',fontFace:'Angsana New'});
     sum.addText('สรุปผลการตรวจสอบอุปกรณ์ความปลอดภัยและอุปกรณ์ฉุกเฉิน (EF-SF-002)',{x:0.44,y:0.72,w:12.45,h:0.6,fontSize:22,bold:true,align:'center',color:'c0392b',fontFace:'Angsana New'});
-    sum.addText(String(pageNo),{x:11.8,y:6.95,w:1.2,h:0.4,fontSize:14,bold:true,align:'right',color:'333333'});
 
     // build rows: one per category, count ปกติ/ไม่ปกติ, collect ไม่ปกติ notes
     const headFill={color:'FF0000'};
@@ -682,25 +1019,36 @@ document.getElementById('btn-export').onclick=async function(){
     });
 
     // ===== PER-POINT PHOTO SLIDES =====
+    // รวบรวมรายการก่อน เพื่อรู้ยอดรวมไว้แสดงความคืบหน้าบนปุ่ม
+    const groups=[];
     for(let si=0; si<TEMPLATE_DATA.length; si++){
       const cat=TEMPLATE_DATA[si];
       const items=cat.points.map((p,pi)=>({p:p,id:uid(si,pi)}))
-        .filter(it=> onlyPhotoExport ? !!photoURL[it.id] : true);
+        .filter(it=> onlyPhotoExport ? photoKeys.has(it.id) : true);
       if(items.length===0 && onlyPhotoExport) continue;
+      groups.push({cat:cat,items:items});
+    }
+    const totalPts=groups.reduce((n,g)=>n+g.items.length,0);
+    let donePts=0;
+
+    for(const g of groups){
+      const cat=g.cat, items=g.items;
       for(let off=0; off<Math.max(items.length,1); off+=PER){
         const chunk=items.slice(off,off+PER);
-        pageNo++;
         const s=pptx.addSlide();
         s.background={color:'FFFFFF'};
         s.addText('รายงานผลการดำเนินงานงานหน่วยงาน',{x:0.44,y:0.10,w:12.45,h:0.55,fontSize:24,bold:true,align:'center',color:'1a212b',fontFace:'Angsana New'});
         s.addText(cat.category,{x:0.44,y:0.75,w:12.45,h:0.7,fontSize:26,bold:true,align:'center',color:'c0392b',fontFace:'Angsana New'});
-        s.addText(String(pageNo),{x:11.8,y:6.95,w:1.2,h:0.4,fontSize:14,bold:true,align:'right',color:'333333'});
         for(let k=0;k<chunk.length;k++){
+          btn.innerHTML='กำลังสร้าง… '+(++donePts)+'/'+totalPts;
+          // คืนคิวให้เบราว์เซอร์เป็นระยะ ไม่งั้นข้อความความคืบหน้าไม่ถูกวาดจนกว่าจะจบทั้งลูป
+          if(donePts%5===0)await new Promise(function(r){setTimeout(r,0);});
           const it=chunk[k];
           const col=k%COLS, row=Math.floor(k/COLS);
           const x=x0+col*(PW+GAPX), y=rowY[row];
-          if(photoBlob[it.id]){
-            const dataUrl=await blobToDataURL(photoBlob[it.id]);
+          const pb=await readPhotoBlob(it.id);   // อ่านทีละใบจาก IDB แล้วปล่อยทิ้ง ไม่ถือทั้งชุดไว้ในแรม
+          if(pb){
+            const dataUrl=await blobToDataURL(pb);
             s.addImage({data:dataUrl,x:x,y:y,w:PW,h:PH});
           }else{
             s.addShape(pptx.ShapeType.rect,{x:x,y:y,w:PW,h:PH,fill:{color:'F0F0F0'},line:{color:'BBBBBB',width:1}});
@@ -713,32 +1061,95 @@ document.getElementById('btn-export').onclick=async function(){
       }
     }
 
+    // ประทับเลขหน้าตอนนี้ที่เดียว — ตอนนี้เท่านั้นที่รู้จำนวนสไลด์จริง รวมสไลด์ที่ autoPage แตกเอง
+    const slides=pptx.slides||[];
+    slides.forEach(function(s,i){
+      s.addText(String(i+1),{x:11.8,y:6.95,w:1.2,h:0.4,fontSize:14,bold:true,align:'right',color:'333333'});
+    });
+
+    btn.innerHTML='กำลังบันทึกไฟล์…';
     const fname='รายงานอุปกรณ์ฉุกเฉิน-'+new Date().toISOString().slice(0,10)+'.pptx';
     await pptx.writeFile({fileName:fname});
-    toast('สร้าง PowerPoint สำเร็จ ('+pageNo+' สไลด์)');
+    toast('สร้าง PowerPoint สำเร็จ ('+slides.length+' สไลด์)');
   }catch(err){console.error(err);toast('เกิดข้อผิดพลาด: '+err.message);}
   finally{btn.disabled=false;btn.innerHTML=orig;}
 };
 
-function showBanner(msg){
-  var w=document.createElement('div');
-  w.style.cssText='background:#3a2e12;color:#ffcf66;padding:10px 16px;font-size:12px;border-bottom:1px solid #5a4718;line-height:1.4';
-  w.textContent=msg;
-  var bar=document.querySelector('.bar');
-  bar.parentNode.insertBefore(w,bar);
+// ---- storage health: แบนเนอร์เดียวที่สะท้อนสถานะจริงตลอดเวลา ----
+function hasData(){return photoKeys.size>0||Object.keys(meta).length>0;}
+function persistRisk(){
+  if(!metaPersistOK||!photoPersistOK)return true;
+  if(!STORAGE_OK&&hasData())return true;
+  if(!idbOK&&photoKeys.size>0)return true;
+  return false;
 }
+function updatePersistBanner(){
+  let msg='';
+  if(!STORAGE_OK)
+    msg='⚠️ ตัวเปิดนี้ไม่อนุญาตให้บันทึกถาวร — ข้อมูล/รูปจะหายเมื่อปิดหน้านี้ แนะนำให้เปิดด้วย Safari หรือ Chrome และกด “สำรองข้อมูล” ในเมนู ⋯ ก่อนปิด';
+  else if(!idbOK)
+    msg='⚠️ เบราว์เซอร์นี้เก็บรูปภาพถาวรไม่ได้ — ผลตรวจถูกบันทึกไว้ แต่ “รูปภาพ” จะหายเมื่อปิดหน้านี้ แนะนำกด “สำรองข้อมูล” ในเมนู ⋯ ก่อนปิด';
+  else if(!metaPersistOK||!photoPersistOK)
+    msg='⚠️ บันทึกลงเครื่องไม่สำเร็จ (พื้นที่อาจเต็ม) — ข้อมูลล่าสุดยังไม่ปลอดภัย กรุณากด “สำรองข้อมูล” ในเมนู ⋯ ทันที';
+  else if(!persisted&&hasData())
+    msg='ℹ️ เบราว์เซอร์อาจลบข้อมูลนี้เองหากไม่ได้เปิดแอปนานหลายวัน — แนะนำกด “สำรองข้อมูล” ในเมนู ⋯ หลังตรวจเสร็จทุกครั้ง';
+  let w=document.getElementById('persist-banner');
+  if(!msg){if(w)w.remove();return;}
+  if(!w){
+    w=document.createElement('div');w.id='persist-banner';w.className='pbanner';
+    const bar=document.querySelector('.bar');bar.parentNode.insertBefore(w,bar);
+  }
+  if(w.textContent!==msg)w.textContent=msg;
+}
+// iOS Safari ลบข้อมูลที่สคริปต์เขียนไว้ทั้งหมดถ้าไม่เปิดเว็บเกิน 7 วัน — ขอยกเว้นไว้ก่อน
+async function requestPersist(){
+  try{
+    if(navigator.storage&&navigator.storage.persist)
+      return (await navigator.storage.persisted())||(await navigator.storage.persist());
+  }catch(e){}
+  return false;
+}
+function fmtMB(n){return n>=1073741824?(n/1073741824).toFixed(1)+' GB':Math.round(n/1048576)+' MB';}
+async function refreshStorageInfo(){
+  const el=document.getElementById('opt-storage');
+  const row=document.getElementById('row-orphan');
+  row.style.display=orphanPhotoKeys.length?'flex':'none';
+  if(orphanPhotoKeys.length)
+    document.getElementById('orphan-label').textContent='ล้างรูปกำพร้า ('+orphanPhotoKeys.length+' รูป)';
+  let txt='พื้นที่เก็บข้อมูล: '+photoKeys.size+' รูป'+(persisted?' · ป้องกันการลบอัตโนมัติแล้ว':'');
+  try{
+    if(navigator.storage&&navigator.storage.estimate){
+      const q=await navigator.storage.estimate();
+      if(q&&q.usage!=null&&q.quota){
+        const pct=Math.round(q.usage/q.quota*100);
+        txt='พื้นที่เก็บข้อมูล: ใช้ไป '+fmtMB(q.usage)+' จาก '+fmtMB(q.quota)+' ('+pct+'%) · '+photoKeys.size+' รูป';
+        el.classList.toggle('warn',pct>=80);
+        if(pct>=80)txt+=' — ใกล้เต็ม กรุณาสำรองข้อมูล';
+      }
+    }
+  }catch(e){}
+  el.textContent=txt;
+}
+document.getElementById('opt-orphan').onclick=async function(){
+  const n=orphanPhotoKeys.length;if(!n)return;
+  if(!confirm('ลบรูป '+n+' รูปที่ไม่ตรงกับรายการตรวจปัจจุบัน?\n(รูปเหล่านี้มาจากรายการที่ถูกแก้ไข/ลบไปแล้ว — ควรกด “สำรองข้อมูล” ก่อน)'))return;
+  for(const k of orphanPhotoKeys){try{await idbDel(k);}catch(e){}}
+  orphanPhotoKeys=[];refreshStorageInfo();toast('ลบรูปกำพร้า '+n+' รูปแล้ว');
+};
+
 async function init(){
   loadSettings();
+  syncTopbarHeight();syncSearchClear();
   document.getElementById('opt-autonext').classList.toggle('on',autoNext);
   document.getElementById('opt-onlyphoto').classList.toggle('on',onlyPhotoExport);
+  setupIO();
   await openDB();
   await loadAll();
   render();
-  if(!STORAGE_OK){
-    showBanner('⚠️ ตัวเปิดนี้ไม่อนุญาตให้บันทึกถาวร — ข้อมูล/รูปจะหายเมื่อปิดหน้านี้ แนะนำให้เปิดด้วย Safari หรือ Chrome และกด “สำรองข้อมูล” ในเมนู ⋯ ก่อนปิด');
-  }else if(!idbOK){
-    showBanner('⚠️ เบราว์เซอร์นี้เก็บรูปภาพถาวรไม่ได้ — ผลตรวจถูกบันทึกไว้ แต่ “รูปภาพ” จะหายเมื่อปิดหน้านี้ แนะนำกด “สำรองข้อมูล” ในเมนู ⋯ ก่อนปิด');
-  }
+  updatePersistBanner();
+  persisted=await requestPersist();
+  updatePersistBanner();
+  refreshStorageInfo();
 }
 init().catch(function(err){
   document.getElementById('list').innerHTML='<div style="padding:30px 16px;color:#e0454e;font-size:14px">เกิดข้อผิดพลาดในการเริ่มต้น:<br>'+esc(err&&err.message||err)+'</div>';
