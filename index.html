@@ -241,7 +241,7 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
     <div class="row" id="row-orphan" style="display:none"><button class="opt" id="opt-orphan"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m2 0v12a2 2 0 01-2 2H8a2 2 0 01-2-2V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="orphan-label">ล้างรูปกำพร้า</span></button></div>
     <div class="row"><button class="opt danger" id="opt-clear"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m2 0v12a2 2 0 01-2 2H8a2 2 0 01-2-2V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>ล้างข้อมูลทั้งหมด</button></div>
     <div class="row"><div class="opt info" id="opt-storage">พื้นที่เก็บข้อมูล: กำลังตรวจสอบ…</div></div>
-    <input type="file" id="restore-file" accept="application/json" style="display:none">
+    <input type="file" id="restore-file" accept=".zip,.json,application/zip,application/json" style="display:none">
   </div>
 </div>
 
@@ -321,6 +321,89 @@ function idbAllKeys(){return new Promise(function(res){const out=[];try{const tx
 function dataURLToBlob(d){const i=d.indexOf(',');const mime=(d.slice(5,i).split(';')[0])||'image/jpeg';const bin=atob(d.slice(i+1));const u8=new Uint8Array(bin.length);for(let j=0;j<bin.length;j++)u8[j]=bin.charCodeAt(j);return new Blob([u8],{type:mime});}
 function blobToDataURL(b){return new Promise(function(res,rej){const r=new FileReader();r.onload=function(){res(r.result);};r.onerror=function(){rej(r.error||new Error('อ่านรูปไม่สำเร็จ'));};r.readAsDataURL(b);});}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+// ---- ZIP (โหมด STORE ไม่บีบอัด) — ใช้กับไฟล์สำรองข้อมูล ----
+// เขียนเองเพราะไม่มี build step และไฟล์สำรอง "ต้อง" ทำงานตอนออฟไลน์ได้ จึงโหลดไลบรารีจาก CDN ไม่ได้
+// JPEG บีบอัดมาแล้ว STORE จึงไม่เสียอะไร และตัด base64 ที่เคยทำให้ไฟล์โต 33% ทิ้งไปด้วย
+const CRC_TABLE=(function(){const t=new Uint32Array(256);
+  for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}
+  return t;})();
+function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC_TABLE[(c^u8[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function zipBuf(len){const b=new Uint8Array(len);let o=0;return{b:b,
+  w16:function(v){b[o++]=v&255;b[o++]=(v>>>8)&255;},
+  w32:function(v){b[o++]=v&255;b[o++]=(v>>>8)&255;b[o++]=(v>>>16)&255;b[o++]=(v>>>24)&255;},
+  raw:function(x){b.set(x,o);o+=x.length;}};}
+// entries: [{name, blob}] — อ่าน blob ทีละใบเพื่อคิด CRC แล้วปล่อยทิ้ง
+// ตัว Blob ใส่เข้า new Blob([...]) โดยอ้างอิง ไม่เคยกองรวมกันในแรม
+async function makeZip(entries,onProgress){
+  const parts=[],central=[];let offset=0;const d=new Date();
+  const dTime=((d.getHours()<<11)|(d.getMinutes()<<5)|((d.getSeconds()/2)|0))&0xFFFF;
+  const dDate=(((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate())&0xFFFF;
+  for(let i=0;i<entries.length;i++){
+    const e=entries[i],name=new TextEncoder().encode(e.name);
+    const u8=new Uint8Array(await e.blob.arrayBuffer());
+    const crc=crc32(u8),size=u8.length;
+    const lh=zipBuf(30+name.length);
+    lh.w32(0x04034b50);lh.w16(20);lh.w16(0x0800);lh.w16(0);   // 0x0800 = ชื่อไฟล์เป็น UTF-8
+    lh.w16(dTime);lh.w16(dDate);lh.w32(crc);lh.w32(size);lh.w32(size);
+    lh.w16(name.length);lh.w16(0);lh.raw(name);
+    parts.push(lh.b,e.blob);
+    const ch=zipBuf(46+name.length);
+    ch.w32(0x02014b50);ch.w16(20);ch.w16(20);ch.w16(0x0800);ch.w16(0);
+    ch.w16(dTime);ch.w16(dDate);ch.w32(crc);ch.w32(size);ch.w32(size);
+    ch.w16(name.length);ch.w16(0);ch.w16(0);ch.w16(0);ch.w16(0);ch.w32(0);ch.w32(offset);
+    ch.raw(name);
+    central.push(ch.b);
+    offset+=lh.b.length+size;
+    if(onProgress)onProgress(i+1,entries.length);
+  }
+  const cdSize=central.reduce(function(n,c){return n+c.length;},0);
+  const eo=zipBuf(22);
+  eo.w32(0x06054b50);eo.w16(0);eo.w16(0);
+  eo.w16(entries.length);eo.w16(entries.length);eo.w32(cdSize);eo.w32(offset);eo.w16(0);
+  return new Blob(parts.concat(central,[eo.b]),{type:'application/zip'});
+}
+// อ่านเฉพาะสารบัญ — เนื้อของแต่ละ entry คืนเป็น Blob slice ซึ่งเป็น "มุมมอง" ไม่ใช่สำเนา
+// ไฟล์สำรองขนาด 100MB จึงไม่เคยถูกโหลดเข้าแรมทั้งก้อน
+async function readZip(file){
+  if(file.size<22)throw new Error('ไฟล์เล็กเกินกว่าจะเป็น ZIP');
+  const tailLen=Math.min(file.size,66000);
+  const tail=new Uint8Array(await file.slice(file.size-tailLen).arrayBuffer());
+  let p=-1;
+  for(let i=tail.length-22;i>=0;i--)
+    if(tail[i]===0x50&&tail[i+1]===0x4b&&tail[i+2]===0x05&&tail[i+3]===0x06){p=i;break;}
+  if(p<0)throw new Error('หาสารบัญของไฟล์ ZIP ไม่เจอ (ไฟล์อาจไม่ครบ)');
+  const dv=new DataView(tail.buffer,tail.byteOffset);
+  const count=dv.getUint16(p+10,true),cdSize=dv.getUint32(p+12,true),cdOff=dv.getUint32(p+16,true);
+  if(cdOff+cdSize>file.size)throw new Error('ไฟล์ ZIP ไม่ครบ (สารบัญชี้เกินขนาดไฟล์)');
+  const cd=new Uint8Array(await file.slice(cdOff,cdOff+cdSize).arrayBuffer());
+  const cv=new DataView(cd.buffer,cd.byteOffset);
+  const out=[];let o=0;
+  for(let i=0;i<count;i++){
+    if(o+46>cd.length||cv.getUint32(o,true)!==0x02014b50)throw new Error('สารบัญของไฟล์ ZIP เสียหาย');
+    const crc=cv.getUint32(o+16,true),size=cv.getUint32(o+24,true);
+    const nL=cv.getUint16(o+28,true),xL=cv.getUint16(o+30,true),cL=cv.getUint16(o+32,true);
+    const lho=cv.getUint32(o+42,true);
+    out.push({name:new TextDecoder().decode(cd.subarray(o+46,o+46+nL)),crc:crc,size:size,lho:lho});
+    o+=46+nL+xL+cL;
+  }
+  for(const e of out){
+    const lh=new Uint8Array(await file.slice(e.lho,e.lho+30).arrayBuffer());
+    if(lh.length<30)throw new Error('ไฟล์ ZIP ไม่ครบ');
+    const lv=new DataView(lh.buffer,lh.byteOffset);
+    if(lv.getUint32(0,true)!==0x04034b50)throw new Error('หัวข้อมูลใน ZIP เสียหาย');
+    const start=e.lho+30+lv.getUint16(26,true)+lv.getUint16(28,true);
+    if(start+e.size>file.size)throw new Error('ไฟล์ ZIP ไม่ครบ (ข้อมูลถูกตัดกลางคัน)');
+    e.blob=file.slice(start,start+e.size);
+    e.map=null;
+  }
+  return out;
+}
+async function zipEntryBlob(e){   // อ่านทีละใบพร้อมตรวจ CRC เพื่อจับไฟล์ที่เสีย
+  const u8=new Uint8Array(await e.blob.arrayBuffer());
+  if(crc32(u8)!==e.crc)throw new Error('ข้อมูลในไฟล์สำรองเสียหาย ('+e.name+')');
+  return new Blob([u8],{type:/\.jpe?g$/i.test(e.name)?'image/jpeg':'application/octet-stream'});
+}
 
 // ---- persistence ----
 function metaSnapshot(){
@@ -765,65 +848,105 @@ document.getElementById('opt-collapse').onclick=()=>{
 document.getElementById('opt-autonext').onclick=function(){autoNext=!autoNext;this.classList.toggle('on',autoNext);saveSettings();toast(autoNext?'เปิด Auto Next':'ปิด Auto Next');};
 document.getElementById('opt-onlyphoto').onclick=function(){onlyPhotoExport=!onlyPhotoExport;this.classList.toggle('on',onlyPhotoExport);saveSettings();toast(onlyPhotoExport?'จะออกเฉพาะจุดที่มีรูป':'จะออกทุกจุด');};
 document.getElementById('opt-clear').onclick=()=>{if(confirm('ล้างข้อมูลและรูปทั้งหมด?')){clearAll(false);sheet.classList.remove('show');}};
-// เขียน JSON ทีละชิ้นลง Blob — base64 ของรูปทั้งชุดคือ 100MB+ ถ้าถือไว้ใน JS heap พร้อมกันมือถือแครช
+// สำรองเป็น ZIP: รูปเก็บเป็น JPEG ดิบ (ไม่ผ่าน base64) และฝั่งกู้คืนอ่านทีละ entry ได้
 document.getElementById('opt-backup').onclick=async function(){
   const btn=this,orig=btn.innerHTML;btn.disabled=true;
   try{
     flushMeta();
-    const chunks=[];let buf=[],bufLen=0;
-    function put(s){buf.push(s);bufLen+=s.length;if(bufLen>4e6){chunks.push(new Blob(buf));buf=[];bufLen=0;}}
-    put('{"version":2,"app":"safetrack-ef002","ts":'+JSON.stringify(new Date().toISOString())+
-        ',"meta":'+JSON.stringify(metaSnapshot())+',"photos":{');
-
     const items=[];                                        // [stable id, uid|null]
     photoKeys.forEach(function(u){items.push([STABLE[u],u]);});
     orphanPhotoKeys.forEach(function(k){items.push([k,null]);});  // รูปกำพร้าก็ต้องสำรองไปด้วย
 
-    let n=0,first=true;
+    // ชื่อ entry เป็นเลขลำดับ เพราะ stable id มี \x01 กับภาษาไทยอยู่ข้างใน — คู่กันไว้ใน meta.json
+    const entries=[],photoList=[];
+    let n=0;
     for(const it of items){
       const sid=it[0],u=it[1];
-      btn.innerHTML='กำลังสำรอง… '+(++n)+'/'+items.length;
+      btn.innerHTML='กำลังอ่านรูป… '+(++n)+'/'+items.length;
       let b=u?await readPhotoBlob(u):null;
       if(!b&&idbOK){try{b=await idbGet(sid);}catch(e){b=null;}}
       if(!(b instanceof Blob))continue;
-      put((first?'':',')+JSON.stringify(sid)+':'+JSON.stringify(await blobToDataURL(b)));
-      first=false;
+      const name='photos/'+String(photoList.length+1).padStart(4,'0')+'.jpg';
+      photoList.push({file:name,id:sid});
+      entries.push({name:name,blob:b});
     }
-    put('}}');chunks.push(new Blob(buf));
+    const manifest={version:3,app:'safetrack-ef002',ts:new Date().toISOString(),
+                    meta:metaSnapshot(),photos:photoList};
+    entries.unshift({name:'meta.json',blob:new Blob([JSON.stringify(manifest)],{type:'application/json'})});
 
-    const blob=new Blob(chunks,{type:'application/json'});
+    const blob=await makeZip(entries,function(i,t){btn.innerHTML='กำลังสำรอง… '+i+'/'+t;});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download='safetrack-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+    a.download='safetrack-backup-'+new Date().toISOString().slice(0,10)+'.zip';a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-    sheet.classList.remove('show');toast('สำรองข้อมูลแล้ว ('+n+' รูป)');
+    sheet.classList.remove('show');toast('สำรองข้อมูลแล้ว ('+photoList.length+' รูป)');
   }catch(err){toast('สำรองข้อมูลไม่สำเร็จ: '+(err&&err.message||err));}
   finally{btn.disabled=false;btn.innerHTML=orig;}
 };
 document.getElementById('opt-restore').onclick=()=>document.getElementById('restore-file').click();
+
+function applyMetaMap(m){        // stable id -> {result,note}; sid ที่ไม่รู้จักเก็บเป็น orphan
+  for(const sid in m){const u=STABLE2UID[sid],v=m[sid];
+    if(!v||typeof v!=='object')continue;
+    if(u)meta[u]={result:v.result||null,note:typeof v.note==='string'?v.note:''};
+    else orphanMeta[sid]=v;}       // ไฟล์สำรองอาจมาจาก template คนละรุ่น — เก็บไว้ทั้งหมด
+}
+async function storePhotoBySid(sid,blob){
+  const u=STABLE2UID[sid];
+  if(u)await setPhoto(u,blob);
+  else if(idbOK){try{await idbPut(sid,blob);orphanPhotoKeys.push(sid);}catch(e){}}
+}
+
 document.getElementById('restore-file').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
-  if(!confirm('การกู้คืนจะเขียนทับข้อมูลปัจจุบันทั้งหมด ดำเนินการต่อหรือไม่?'))return;
+  const btn=document.getElementById('opt-restore'),orig=btn.innerHTML;
   try{
-    const o=JSON.parse(await f.text());   // f.text() ประหยัดสำเนาได้ 1 ชุดเทียบกับ FileReader
-    if(!o||typeof o!=='object')throw new Error('โครงสร้างไฟล์ไม่ถูกต้อง');
-    await clearAll(true);
-    if(o.version===2&&o.meta&&typeof o.meta==='object'){
-      for(const sid in o.meta){const u=STABLE2UID[sid];const v=o.meta[sid];
-        if(!v||typeof v!=='object')continue;
-        if(u)meta[u]={result:v.result||null,note:typeof v.note==='string'?v.note:''};
-        else orphanMeta[sid]=v;}          // ไฟล์สำรองอาจมาจาก template คนละรุ่น — เก็บไว้ทั้งหมด
-      if(o.photos&&typeof o.photos==='object'){
-        for(const sid in o.photos){const u=STABLE2UID[sid];const d=o.photos[sid];
-          if(typeof d!=='string'||d.indexOf('data:')!==0)continue;
-          if(u)await setPhoto(u,dataURLToBlob(d));
-          else if(idbOK){try{await idbPut(sid,dataURLToBlob(d));orphanPhotoKeys.push(sid);}catch(err){}}}
+    const magic=new Uint8Array(await f.slice(0,4).arrayBuffer());
+    const isZip=magic[0]===0x50&&magic[1]===0x4b&&magic[2]===0x03&&magic[3]===0x04;
+
+    if(isZip){
+      // อ่านสารบัญ + meta.json ให้ผ่านก่อน แล้วค่อยยืนยัน/ล้างของเดิม
+      // ถ้าไฟล์เสีย ผู้ใช้ต้องไม่เสียข้อมูลที่มีอยู่ไปด้วย
+      const zip=await readZip(f);
+      const metaEntry=zip.find(function(z){return z.name==='meta.json';});
+      if(!metaEntry)throw new Error('ไม่พบ meta.json ในไฟล์สำรอง');
+      const manifest=JSON.parse(await (await zipEntryBlob(metaEntry)).text());
+      if(!manifest||manifest.app!=='safetrack-ef002')throw new Error('ไม่ใช่ไฟล์สำรองของ SafeTrack');
+      const photos=Array.isArray(manifest.photos)?manifest.photos:[];
+      if(!confirm('การกู้คืนจะเขียนทับข้อมูลปัจจุบันทั้งหมด ดำเนินการต่อหรือไม่?\n(ไฟล์นี้มีรูป '+photos.length+' รูป)'))return;
+
+      btn.disabled=true;
+      await clearAll(true);
+      applyMetaMap(manifest.meta&&typeof manifest.meta==='object'?manifest.meta:{});
+      const byName={};zip.forEach(function(z){byName[z.name]=z;});
+      let n=0;
+      for(const p of photos){
+        const z=p&&byName[p.file];
+        if(!z||typeof p.id!=='string')continue;
+        btn.innerHTML='กำลังกู้คืน… '+(++n)+'/'+photos.length;
+        await storePhotoBySid(p.id,await zipEntryBlob(z));  // ทีละใบ แรมไม่บานตามขนาดไฟล์
       }
     }else{
-      // legacy backup: positional keys with inline .photo dataURLs
-      for(const u in o){if(!/^s\d+p\d+$/.test(u)||!(u in STABLE))continue;const it=o[u]||{};const mm={};if(it.result)mm.result=it.result;if(typeof it.note==='string')mm.note=it.note;if(mm.result||mm.note)meta[u]=mm;if(typeof it.photo==='string'&&it.photo.indexOf('data:')===0)await setPhoto(u,dataURLToBlob(it.photo));}
+      // ไฟล์สำรองรูปแบบเดิม (v2 และ legacy) — ต้องกู้คืนได้เสมอ
+      if(!confirm('การกู้คืนจะเขียนทับข้อมูลปัจจุบันทั้งหมด ดำเนินการต่อหรือไม่?'))return;
+      const o=JSON.parse(await f.text());
+      if(!o||typeof o!=='object')throw new Error('โครงสร้างไฟล์ไม่ถูกต้อง');
+      btn.disabled=true;
+      await clearAll(true);
+      if(o.version===2&&o.meta&&typeof o.meta==='object'){
+        applyMetaMap(o.meta);
+        if(o.photos&&typeof o.photos==='object'){
+          for(const sid in o.photos){const d=o.photos[sid];
+            if(typeof d!=='string'||d.indexOf('data:')!==0)continue;
+            await storePhotoBySid(sid,dataURLToBlob(d));}
+        }
+      }else{
+        // legacy backup: positional keys with inline .photo dataURLs
+        for(const u in o){if(!/^s\d+p\d+$/.test(u)||!(u in STABLE))continue;const it=o[u]||{};const mm={};if(it.result)mm.result=it.result;if(typeof it.note==='string')mm.note=it.note;if(mm.result||mm.note)meta[u]=mm;if(typeof it.photo==='string'&&it.photo.indexOf('data:')===0)await setPhoto(u,dataURLToBlob(it.photo));}
+      }
     }
     saveMeta();render();refreshStorageInfo();sheet.classList.remove('show');toast('กู้คืนข้อมูลแล้ว');
   }catch(err){toast('ไฟล์ไม่ถูกต้อง: '+(err&&err.message||err));}
+  finally{btn.disabled=false;btn.innerHTML=orig;}
 };
 
 // ====== EXPORT POWERPOINT ======
