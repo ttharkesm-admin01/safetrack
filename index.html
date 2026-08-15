@@ -58,12 +58,17 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
 /* storage-health banner — shown only while data is actually at risk */
 .pbanner{background:#fff6e0;color:#7a5200;padding:10px 16px;font-size:12px;border-bottom:1px solid #f0dca8;line-height:1.45}
 .bar{padding:0 16px 8px}
+.searchwrap{position:relative}
+.searchwrap input{padding-right:42px!important}
+#search-clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:30px;height:30px;border:none;border-radius:50%;background:var(--panel2);color:var(--mut);font-size:13px;cursor:pointer;display:grid;place-items:center;padding:0;font-family:inherit}
+#search-clear[hidden]{display:none}
+#search-clear:active{background:rgba(24,135,68,.12);color:var(--green2)}
 .bar input{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--txt);padding:12px 14px;border-radius:12px;font-size:14px;font-family:inherit;box-shadow:0 1px 3px rgba(20,50,30,.05)}
 .bar input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 2px rgba(24,135,68,.18)}
 .bar input::placeholder{color:var(--mut)}
 .cat{margin:8px 0}
-.cathead{padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line);position:sticky;top:72px;z-index:10}
-.cathead .chev{color:var(--green)}
+/* --topbar-h วัดจากความสูงจริงตอนรัน — หัวข้ออาจขึ้นบรรทัดใหม่บนจอแคบ ค่าคงที่จึงเพี้ยน */
+.cathead{padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line);position:sticky;top:var(--topbar-h,76px);z-index:10}
 .cathead .ct{font-weight:700;font-size:13.5px;flex:1;color:var(--green2)}
 .cathead .cn{font-size:11px;color:var(--mut);background:var(--panel2);padding:3px 9px;border-radius:20px}
 .cathead .cn-ok{color:#fff;background:var(--pass)}
@@ -202,7 +207,7 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
   <div class="pct" id="prog-pct">ตรวจแล้ว <b>0</b> จาก <b>0</b> จุด</div>
 </div>
 
-<div class="bar"><input id="search" placeholder="ค้นหา รหัส / ตำแหน่ง / ประเภท…"></div>
+<div class="bar"><div class="searchwrap"><input id="search" placeholder="ค้นหา รหัส / ตำแหน่ง / ประเภท…"><button id="search-clear" aria-label="ล้างคำค้นหา" hidden>✕</button></div></div>
 
 <div id="list"></div>
 
@@ -285,6 +290,7 @@ let orphanPhotoKeys=[]; // stable id ของรูปใน IDB ที่ temp
 let onlyPhotoExport=false;
 let activeFilter='all'; // all | pending | pass | fail
 let autoNext=true;      // jump to next point after marking result
+const collapsedCats=new Set();  // ดัชนีหมวดที่ถูกยุบ — เก็บแยกจาก DOM เพราะ render() สร้าง .cat ใหม่ทุกครั้ง
 let metaPersistOK=true, photoPersistOK=true, persisted=false;
 
 // ---- IndexedDB: photos live here (localStorage is ~5MB — far too small for ~195 images) ----
@@ -338,8 +344,8 @@ function saveMeta(){
 let _metaT=null;
 function saveMetaSoon(){clearTimeout(_metaT);_metaT=setTimeout(function(){_metaT=null;saveMeta();},400);}
 function flushMeta(){if(_metaT){clearTimeout(_metaT);_metaT=null;saveMeta();}}
-function saveSettings(){lsSet(SETT_KEY,JSON.stringify({autoNext:autoNext,onlyPhoto:onlyPhotoExport,filter:activeFilter}));}
-function loadSettings(){try{const s=JSON.parse(lsGet(SETT_KEY)||'{}');if(typeof s.autoNext==='boolean')autoNext=s.autoNext;if(typeof s.onlyPhoto==='boolean')onlyPhotoExport=s.onlyPhoto;if(s.filter)activeFilter=s.filter;}catch(e){}}
+function saveSettings(){lsSet(SETT_KEY,JSON.stringify({autoNext:autoNext,onlyPhoto:onlyPhotoExport,filter:activeFilter,collapsed:[...collapsedCats]}));}
+function loadSettings(){try{const s=JSON.parse(lsGet(SETT_KEY)||'{}');if(typeof s.autoNext==='boolean')autoNext=s.autoNext;if(typeof s.onlyPhoto==='boolean')onlyPhotoExport=s.onlyPhoto;if(s.filter)activeFilter=s.filter;if(Array.isArray(s.collapsed))s.collapsed.forEach(function(i){if(typeof i==='number')collapsedCats.add(i);});}catch(e){}}
 
 // ---- photo ops ----
 // รูปทั้งชุดคือ ~40–80MB จึงถือ object URL ไว้แค่ไม่กี่ใบ แล้วโหลดที่เหลือจาก IDB เมื่อเลื่อนถึง
@@ -464,9 +470,16 @@ function gotoNext(curId){
   const i=FLAT_IDS.indexOf(curId);if(i<0)return;
   for(let j=i+1;j<FLAT_IDS.length;j++){
     const el=document.querySelector('.photo[data-id="'+FLAT_IDS[j]+'"]');
-    if(el){const card=el.closest('.card');card.scrollIntoView({behavior:'smooth',block:'center'});
-      card.style.transition='box-shadow .3s';card.style.boxShadow='0 0 0 2px var(--green)';
-      setTimeout(function(){card.style.boxShadow='';},900);return;}
+    if(!el)continue;
+    const card=el.closest('.card'),cat=el.closest('.cat');
+    // การ์ดอยู่ใน .grid ที่ display:none ถ้าหมวดถูกยุบ — scrollIntoView จะเงียบสนิท ต้องกางก่อน
+    if(cat&&cat.classList.contains('collapsed')){
+      cat.classList.remove('collapsed');
+      collapsedCats.delete(+cat.dataset.si);saveSettings();
+    }
+    card.scrollIntoView({behavior:'smooth',block:'center'});
+    card.style.transition='box-shadow .3s';card.style.boxShadow='0 0 0 2px var(--green)';
+    setTimeout(function(){card.style.boxShadow='';},900);return;
   }
 }
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200)}
@@ -490,7 +503,9 @@ function cardHTML(si,pi){
   const bTxt=st.result==='pass'?'ปกติ':(st.result==='fail'?'ไม่ปกติ':'รอตรวจ');
   const badge='<span class="badge '+bCls+'">'+bTxt+'</span>';
   const inner=
-    '<div class="photo" data-act="'+(hasPhoto?'view':'gallery')+'" data-id="'+id+'">'+
+    '<div class="photo" role="button" tabindex="0" aria-label="'+
+        esc((hasPhoto?'ดูรูปของ ':'เลือกรูปให้ ')+(p.code||'')+' '+(p.location||''))+'" '+
+        'data-act="'+(hasPhoto?'view':'gallery')+'" data-id="'+id+'">'+
       (hasPhoto?('<img alt="" loading="lazy" decoding="async"'+(photoURL[id]?(' src="'+photoURL[id]+'"'):'')+'>'):
         ('<div class="ph">'+CAM_SVG+'แตะเพื่อเลือกรูป</div>'))+
       badge+
@@ -580,7 +595,7 @@ function render(){
     });
     if(matchPts.length===0)return;
     shown+=matchPts.length;
-    const wrap=document.createElement('div');wrap.className='cat';wrap.dataset.si=si;
+    const wrap=document.createElement('div');wrap.className='cat'+(collapsedCats.has(si)?' collapsed':'');wrap.dataset.si=si;
     wrap.innerHTML='<div class="cathead">'+catHeadHTML(si)+'</div><div class="grid"></div>';
     const grid=wrap.querySelector('.grid');
     matchPts.forEach(({p,pi})=>{
@@ -620,11 +635,33 @@ document.getElementById('list').addEventListener('click',e=>{
 document.getElementById('list').addEventListener('click',e=>{
   const h=e.target.closest('.cathead');if(!h)return;
   if(e.target.closest('[data-act]'))return;
-  h.parentElement.classList.toggle('collapsed');
+  const cat=h.parentElement,si=+cat.dataset.si;
+  const nowCollapsed=cat.classList.toggle('collapsed');
+  if(nowCollapsed)collapsedCats.add(si);else collapsedCats.delete(si);
+  saveSettings();
 });
+// ช่องรูปเป็น div จึงต้องรับ Enter/Space เองให้ใช้คีย์บอร์ดได้เหมือนปุ่ม
+document.getElementById('list').addEventListener('keydown',e=>{
+  if(e.key!=='Enter'&&e.key!==' ')return;
+  const ph=e.target.closest('.photo[data-act]');if(!ph)return;
+  e.preventDefault();ph.click();
+});
+// ช่องหมายเหตุตั้ง rows=1 — ยืดตามเนื้อหาเพื่อให้อ่านสิ่งที่พิมพ์ได้ (ข้อความนี้ไปโผล่ในรายงาน)
+const NOTE_MAX_H=120;
+function growNote(el){
+  el.style.height='auto';
+  // box-sizing:border-box ทำให้ height รวมเส้นขอบด้วย แต่ scrollHeight ไม่รวม — ต้องบวกคืน
+  const border=el.offsetHeight-el.clientHeight;
+  el.style.height=Math.min(el.scrollHeight+border,NOTE_MAX_H)+'px';
+}
 document.getElementById('list').addEventListener('input',e=>{
   const el=e.target.closest('[data-act="note"]');if(!el)return;
+  growNote(el);
   const id=el.dataset.id;meta[id]=meta[id]||{};meta[id].note=el.value;saveMetaSoon();
+});
+// ยืดครั้งแรกตอนโฟกัส — ไม่ทำตอน render เพราะจะบังคับ layout ทั้ง 195 ใบ
+document.getElementById('list').addEventListener('focusin',e=>{
+  const el=e.target.closest('[data-act="note"]');if(el)growNote(el);
 });
 // มือถือปิดแท็บทิ้งได้ทุกเมื่อ — ต้อง flush ที่ค้างอยู่ก่อนหน้าถูกเก็บ
 window.addEventListener('pagehide',flushMeta);
@@ -680,7 +717,20 @@ function resizeImageToBlob(file,maxW,quality){
 }
 
 let _searchT=null;
-document.getElementById('search').addEventListener('input',function(){clearTimeout(_searchT);_searchT=setTimeout(render,120);});
+const searchEl=document.getElementById('search'),searchClear=document.getElementById('search-clear');
+function syncSearchClear(){searchClear.hidden=!searchEl.value;}
+searchEl.addEventListener('input',function(){syncSearchClear();clearTimeout(_searchT);_searchT=setTimeout(render,120);});
+searchClear.addEventListener('click',function(){searchEl.value='';syncSearchClear();clearTimeout(_searchT);render();searchEl.focus();});
+
+// หัวหมวด sticky ต้องเกาะใต้ topbar พอดี — วัดความสูงจริงแทนการฮาร์ดโค้ด
+function syncTopbarHeight(){
+  const tb=document.querySelector('.topbar');
+  if(tb)document.documentElement.style.setProperty('--topbar-h',tb.offsetHeight+'px');
+}
+window.addEventListener('resize',syncTopbarHeight,{passive:true});
+window.addEventListener('orientationchange',syncTopbarHeight);
+// ฟอนต์ไทยโหลดทีหลังแล้วทำให้ความสูงเปลี่ยน ต้องวัดซ้ำ
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(syncTopbarHeight);
 
 // stat cards as status filters (tap again to clear)
 document.querySelectorAll('.stat').forEach(s=>{
@@ -706,7 +756,11 @@ sheet.addEventListener('click',e=>{if(e.target===sheet)sheet.classList.remove('s
 document.getElementById('opt-collapse').onclick=()=>{
   const cats=[...document.querySelectorAll('.cat')];
   const anyOpen=cats.some(c=>!c.classList.contains('collapsed'));
-  cats.forEach(c=>c.classList.toggle('collapsed',anyOpen));sheet.classList.remove('show');
+  cats.forEach(function(c){
+    c.classList.toggle('collapsed',anyOpen);
+    const si=+c.dataset.si;if(anyOpen)collapsedCats.add(si);else collapsedCats.delete(si);
+  });
+  saveSettings();sheet.classList.remove('show');
 };
 document.getElementById('opt-autonext').onclick=function(){autoNext=!autoNext;this.classList.toggle('on',autoNext);saveSettings();toast(autoNext?'เปิด Auto Next':'ปิด Auto Next');};
 document.getElementById('opt-onlyphoto').onclick=function(){onlyPhotoExport=!onlyPhotoExport;this.classList.toggle('on',onlyPhotoExport);saveSettings();toast(onlyPhotoExport?'จะออกเฉพาะจุดที่มีรูป':'จะออกทุกจุด');};
@@ -788,15 +842,14 @@ document.getElementById('btn-export').onclick=async function(){
     const GAPX=(13.333-0.14-COLS*PW)/(COLS-1); // distribute
     const x0=0.07, yTop=1.77, yBot=4.10;
     const rowY=[yTop,yBot];
-    let pageNo=0;
+    // เลขหน้าไม่ประทับตอนนี้ — ตารางสรุปใช้ autoPage ซึ่ง pptxgenjs แตกสไลด์เพิ่มเอง
+    // ถ้านับเองระหว่างทางจะเพี้ยนทั้งเล่ม (ดู stampPageNumbers ตอนท้าย)
 
     // ===== SUMMARY TABLE SLIDE (first page) =====
-    pageNo++;
     const sum=pptx.addSlide();
     sum.background={color:'FFFFFF'};
     sum.addText('รายงานผลการดำเนินงานงานหน่วยงาน',{x:0.44,y:0.10,w:12.45,h:0.55,fontSize:24,bold:true,align:'center',color:'1a212b',fontFace:'Angsana New'});
     sum.addText('สรุปผลการตรวจสอบอุปกรณ์ความปลอดภัยและอุปกรณ์ฉุกเฉิน (EF-SF-002)',{x:0.44,y:0.72,w:12.45,h:0.6,fontSize:22,bold:true,align:'center',color:'c0392b',fontFace:'Angsana New'});
-    sum.addText(String(pageNo),{x:11.8,y:6.95,w:1.2,h:0.4,fontSize:14,bold:true,align:'right',color:'333333'});
 
     // build rows: one per category, count ปกติ/ไม่ปกติ, collect ไม่ปกติ notes
     const headFill={color:'FF0000'};
@@ -843,20 +896,30 @@ document.getElementById('btn-export').onclick=async function(){
     });
 
     // ===== PER-POINT PHOTO SLIDES =====
+    // รวบรวมรายการก่อน เพื่อรู้ยอดรวมไว้แสดงความคืบหน้าบนปุ่ม
+    const groups=[];
     for(let si=0; si<TEMPLATE_DATA.length; si++){
       const cat=TEMPLATE_DATA[si];
       const items=cat.points.map((p,pi)=>({p:p,id:uid(si,pi)}))
         .filter(it=> onlyPhotoExport ? photoKeys.has(it.id) : true);
       if(items.length===0 && onlyPhotoExport) continue;
+      groups.push({cat:cat,items:items});
+    }
+    const totalPts=groups.reduce((n,g)=>n+g.items.length,0);
+    let donePts=0;
+
+    for(const g of groups){
+      const cat=g.cat, items=g.items;
       for(let off=0; off<Math.max(items.length,1); off+=PER){
         const chunk=items.slice(off,off+PER);
-        pageNo++;
         const s=pptx.addSlide();
         s.background={color:'FFFFFF'};
         s.addText('รายงานผลการดำเนินงานงานหน่วยงาน',{x:0.44,y:0.10,w:12.45,h:0.55,fontSize:24,bold:true,align:'center',color:'1a212b',fontFace:'Angsana New'});
         s.addText(cat.category,{x:0.44,y:0.75,w:12.45,h:0.7,fontSize:26,bold:true,align:'center',color:'c0392b',fontFace:'Angsana New'});
-        s.addText(String(pageNo),{x:11.8,y:6.95,w:1.2,h:0.4,fontSize:14,bold:true,align:'right',color:'333333'});
         for(let k=0;k<chunk.length;k++){
+          btn.innerHTML='กำลังสร้าง… '+(++donePts)+'/'+totalPts;
+          // คืนคิวให้เบราว์เซอร์เป็นระยะ ไม่งั้นข้อความความคืบหน้าไม่ถูกวาดจนกว่าจะจบทั้งลูป
+          if(donePts%5===0)await new Promise(function(r){setTimeout(r,0);});
           const it=chunk[k];
           const col=k%COLS, row=Math.floor(k/COLS);
           const x=x0+col*(PW+GAPX), y=rowY[row];
@@ -875,9 +938,16 @@ document.getElementById('btn-export').onclick=async function(){
       }
     }
 
+    // ประทับเลขหน้าตอนนี้ที่เดียว — ตอนนี้เท่านั้นที่รู้จำนวนสไลด์จริง รวมสไลด์ที่ autoPage แตกเอง
+    const slides=pptx.slides||[];
+    slides.forEach(function(s,i){
+      s.addText(String(i+1),{x:11.8,y:6.95,w:1.2,h:0.4,fontSize:14,bold:true,align:'right',color:'333333'});
+    });
+
+    btn.innerHTML='กำลังบันทึกไฟล์…';
     const fname='รายงานอุปกรณ์ฉุกเฉิน-'+new Date().toISOString().slice(0,10)+'.pptx';
     await pptx.writeFile({fileName:fname});
-    toast('สร้าง PowerPoint สำเร็จ ('+pageNo+' สไลด์)');
+    toast('สร้าง PowerPoint สำเร็จ ('+slides.length+' สไลด์)');
   }catch(err){console.error(err);toast('เกิดข้อผิดพลาด: '+err.message);}
   finally{btn.disabled=false;btn.innerHTML=orig;}
 };
@@ -946,6 +1016,7 @@ document.getElementById('opt-orphan').onclick=async function(){
 
 async function init(){
   loadSettings();
+  syncTopbarHeight();syncSearchClear();
   document.getElementById('opt-autonext').classList.toggle('on',autoNext);
   document.getElementById('opt-onlyphoto').classList.toggle('on',onlyPhotoExport);
   setupIO();
