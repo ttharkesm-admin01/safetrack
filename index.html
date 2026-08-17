@@ -245,6 +245,24 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
   </div>
 </div>
 
+<!-- แผง "ไฟล์พร้อมแล้ว" — ต้องแยกจังหวะจากตอนสร้างไฟล์ เพราะ navigator.share()
+     ต้องถูกเรียกใต้ user gesture ใหม่ (การสร้างไฟล์กินเวลานานกว่าอายุของ gesture เดิม) -->
+<div class="sheet" id="filesheet">
+  <div class="inner">
+    <div class="grab"></div>
+    <div class="shead">
+      <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <h3>ไฟล์พร้อมแล้ว</h3>
+      <button class="x" id="file-close" aria-label="ปิด">✕</button>
+    </div>
+    <div class="row"><div class="opt info" id="file-info"></div></div>
+    <div class="row">
+      <button class="opt" id="file-share" hidden><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 16V3m0 0L8 7m4-4l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>ส่งไฟล์</button>
+      <button class="opt" id="file-download"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>ดาวน์โหลด</button>
+    </div>
+  </div>
+</div>
+
 <button class="totop" id="totop" aria-label="กลับขึ้นบน">↑</button>
 <div class="toast" id="toast"></div>
 <div class="lightbox" id="lightbox"><img id="lb-img"></div>
@@ -321,6 +339,32 @@ function idbAllKeys(){return new Promise(function(res){const out=[];try{const tx
 function dataURLToBlob(d){const i=d.indexOf(',');const mime=(d.slice(5,i).split(';')[0])||'image/jpeg';const bin=atob(d.slice(i+1));const u8=new Uint8Array(bin.length);for(let j=0;j<bin.length;j++)u8[j]=bin.charCodeAt(j);return new Blob([u8],{type:mime});}
 function blobToDataURL(b){return new Promise(function(res,rej){const r=new FileReader();r.onload=function(){res(r.result);};r.onerror=function(){rej(r.error||new Error('อ่านรูปไม่สำเร็จ'));};r.readAsDataURL(b);});}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+// ---- ส่งไฟล์ออกจากแอป ----
+// เบราว์เซอร์ในแอป (LINE / CPF Connext) มักเมิน <a download> เงียบ ๆ ผู้ใช้จึงอาจเห็นว่า
+// "สำเร็จ" ทั้งที่ไม่ได้ไฟล์ จึงให้ผู้ใช้เลือกเองระหว่าง "ส่งไฟล์" กับ "ดาวน์โหลด"
+// และ **ห้ามสลับทางให้เองเงียบ ๆ** — ถ้าส่งไม่สำเร็จให้บอกแล้วชี้ไปที่ปุ่มดาวน์โหลด
+let pendingFile=null;   // {blob,name} เก็บไว้ให้กดซ้ำได้โดยไม่ต้องสร้างไฟล์ใหม่
+function makeFileObj(blob,name){return new File([blob],name,{type:blob.type||'application/octet-stream'});}
+function canShareFile(blob,name){
+  try{return !!(navigator.canShare&&navigator.canShare({files:[makeFileObj(blob,name)]}));}
+  catch(e){return false;}
+}
+function shareFile(blob,name){return navigator.share({files:[makeFileObj(blob,name)],title:name});}
+function downloadFile(blob,name){
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+}
+function fmtBytes(n){return n>=1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB';}
+function offerFile(blob,name,msg){
+  pendingFile={blob:blob,name:name};
+  document.getElementById('file-info').textContent=name+' · '+fmtBytes(blob.size);
+  document.getElementById('file-share').hidden=!canShareFile(blob,name);
+  document.getElementById('filesheet').classList.add('show');
+  toast(msg||'สร้างไฟล์เสร็จแล้ว — เลือกส่งหรือดาวน์โหลด');
+}
+function closeFileSheet(){pendingFile=null;document.getElementById('filesheet').classList.remove('show');}
 
 // ---- ZIP (โหมด STORE ไม่บีบอัด) — ใช้กับไฟล์สำรองข้อมูล ----
 // เขียนเองเพราะไม่มี build step และไฟล์สำรอง "ต้อง" ทำงานตอนออฟไลน์ได้ จึงโหลดไลบรารีจาก CDN ไม่ได้
@@ -835,6 +879,28 @@ totop.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 const sheet=document.getElementById('sheet');
 document.getElementById('btn-more').onclick=()=>{sheet.classList.add('show');refreshStorageInfo();};
 document.getElementById('opt-close').onclick=()=>sheet.classList.remove('show');
+
+// ---- ปุ่มของแผง "ไฟล์พร้อมแล้ว" — สองทางแยกกัน ผู้ใช้เลือกเอง ----
+const filesheet=document.getElementById('filesheet');
+document.getElementById('file-close').onclick=closeFileSheet;
+filesheet.addEventListener('click',e=>{if(e.target===filesheet)closeFileSheet();});
+document.getElementById('file-share').onclick=async function(){
+  if(!pendingFile)return;
+  const btn=this;btn.disabled=true;
+  try{
+    await shareFile(pendingFile.blob,pendingFile.name);
+    toast('ส่งไฟล์แล้ว');closeFileSheet();
+  }catch(err){
+    // ผู้ใช้ปิดแผงแชร์เองไม่ใช่ข้อผิดพลาด และห้ามดาวน์โหลดแทนโดยไม่ได้ขอ
+    if(err&&err.name==='AbortError')toast('ยกเลิกการส่ง — ไฟล์ยังอยู่ เลือกใหม่ได้');
+    else toast('ส่งไฟล์ไม่สำเร็จ — ลองกดดาวน์โหลดแทน');
+  }finally{btn.disabled=false;}
+};
+document.getElementById('file-download').onclick=function(){
+  if(!pendingFile)return;
+  downloadFile(pendingFile.blob,pendingFile.name);
+  toast('ดาวน์โหลดไฟล์แล้ว');closeFileSheet();
+};
 sheet.addEventListener('click',e=>{if(e.target===sheet)sheet.classList.remove('show')});
 document.getElementById('opt-collapse').onclick=()=>{
   const cats=[...document.querySelectorAll('.cat')];
@@ -875,10 +941,8 @@ document.getElementById('opt-backup').onclick=async function(){
     entries.unshift({name:'meta.json',blob:new Blob([JSON.stringify(manifest)],{type:'application/json'})});
 
     const blob=await makeZip(entries,function(i,t){btn.innerHTML='กำลังสำรอง… '+i+'/'+t;});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download='safetrack-backup-'+new Date().toISOString().slice(0,10)+'.zip';a.click();
-    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-    sheet.classList.remove('show');toast('สำรองข้อมูลแล้ว ('+photoList.length+' รูป)');
+    sheet.classList.remove('show');
+    offerFile(blob,'safetrack-backup-'+new Date().toISOString().slice(0,10)+'.zip');
   }catch(err){toast('สำรองข้อมูลไม่สำเร็จ: '+(err&&err.message||err));}
   finally{btn.disabled=false;btn.innerHTML=orig;}
 };
@@ -1069,8 +1133,12 @@ document.getElementById('btn-export').onclick=async function(){
 
     btn.innerHTML='กำลังบันทึกไฟล์…';
     const fname='รายงานอุปกรณ์ฉุกเฉิน-'+new Date().toISOString().slice(0,10)+'.pptx';
-    await pptx.writeFile({fileName:fname});
-    toast('สร้าง PowerPoint สำเร็จ ('+slides.length+' สไลด์)');
+    // เอา Blob มาเองแทน writeFile() ซึ่งยิง <a download> ให้ข้างใน — จะได้คุมการส่งไฟล์เอง
+    // pptxgenjs คืน type เป็น application/zip ต้องหุ้มใหม่เป็น MIME ของ PowerPoint
+    // ไม่งั้นแอปปลายทางตอนแชร์จะเห็นเป็นไฟล์ zip (หุ้ม Blob ซ้ำไม่ได้คัดลอกข้อมูล)
+    const blob=new Blob([await pptx.write({outputType:'blob'})],
+      {type:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
+    offerFile(blob,fname,'สร้าง PowerPoint สำเร็จ ('+slides.length+' สไลด์) — เลือกส่งหรือดาวน์โหลด');
   }catch(err){console.error(err);toast('เกิดข้อผิดพลาด: '+err.message);}
   finally{btn.disabled=false;btn.innerHTML=orig;}
 };
