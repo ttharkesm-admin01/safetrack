@@ -1382,6 +1382,8 @@ document.getElementById('btn-export').onclick=async function(){
     pptx.layout='W';
     const PER=14, COLS=7, ROWS=2;
     const PW=1.78, PH=1.65;          // photo size (in)
+    // ช่องรูปกว้าง 1.78 นิ้ว = ~534px ที่ 300 DPI — 600px จึงเกินพออยู่แล้ว
+    const EXPORT_MAX_W=600, EXPORT_Q=.8;
     const GAPX=(13.333-0.14-COLS*PW)/(COLS-1); // distribute
     const x0=0.07, yTop=1.77, yBot=4.10;
     const rowY=[yTop,yBot];
@@ -1466,9 +1468,19 @@ document.getElementById('btn-export').onclick=async function(){
           const it=chunk[k];
           const col=k%COLS, row=Math.floor(k/COLS);
           const x=x0+col*(PW+GAPX), y=rowY[row];
-          const pb=await readPhotoBlob(it.id);   // อ่านทีละใบจาก IDB แล้วปล่อยทิ้ง ไม่ถือทั้งชุดไว้ในแรม
+          const pb=await readPhotoBlob(it.id);   // อ่านทีละใบจาก IDB ไม่ดึง Blob ทั้งชุดมากองไว้
           if(pb){
-            const dataUrl=await blobToDataURL(pb);
+            // ต้องย่อก่อนฝัง: pptxgenjs เก็บสตริง base64 ของทุกรูปไว้ใน _relsMedia
+            // จนกว่าจะ write() — การอ่านทีละใบจึงไม่ช่วยสิ่งเดียวเรื่องแรม รูป 195 ใบ
+            // (~75MB) จึงกลายเป็น base64 ระดับร้อย MB ค้างอยู่ตอนสร้างไฟล์ — แท็บดับได้บนมือถือ
+            // ย่อเหลือ 600px ก่อนจึงตัดลงราว 4 เท่า โดยที่ความชัดบนสไลด์เท่าเดิม (ช่องกว้างแค่ 1.78 นิ้ว)
+            // ย่อไม่สำเร็จให้ใช้รูปเดิม — รายงานไฟล์ใหน่อยดีกว่ารายงานที่รูปหาย
+            let emb=pb;
+            try{
+              const small=await resizeImageToBlob(pb,EXPORT_MAX_W,EXPORT_Q);
+              if(small instanceof Blob&&small.size>0&&small.size<pb.size)emb=small;
+            }catch(e){}
+            const dataUrl=await blobToDataURL(emb);
             s.addImage({data:dataUrl,x:x,y:y,w:PW,h:PH});
           }else{
             s.addShape(pptx.ShapeType.rect,{x:x,y:y,w:PW,h:PH,fill:{color:'F0F0F0'},line:{color:'BBBBBB',width:1}});
