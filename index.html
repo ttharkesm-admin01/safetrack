@@ -169,6 +169,41 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
 .sheet .opt.info{cursor:default;font-weight:500;font-size:12.5px;color:var(--mut);background:transparent;border-style:dashed}
 .sheet .opt.info:active{transform:none;background:transparent;border-color:var(--line)}
 .sheet .opt.warn{color:#7a5200;border-color:#e6c67a;background:#fff6e0}
+/* ---- ปุ่ม "คู่มือ" มุมขวาของหัวแอป + หน้าคู่มือเต็มจอ ---- */
+.helpbtn{flex:0 0 auto;display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);color:#fff;font-family:inherit;font-size:11.5px;font-weight:700;padding:7px 11px;border-radius:20px;cursor:pointer;line-height:1}
+.helpbtn:active{background:rgba(255,255,255,.3)}
+.guide{position:fixed;inset:0;z-index:80;background:var(--bg);display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.guide.show{display:block}
+.guide .ghead{position:sticky;top:0;z-index:2;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;padding:14px 16px calc(14px + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(15,110,52,.25)}
+.guide .ghead h2{font-size:17px;font-weight:800;flex:1;line-height:1.3}
+.guide .ghead .gsub{display:block;font-size:11px;font-weight:500;color:rgba(255,255,255,.75);margin-top:2px}
+.guide .ghead .x{flex:0 0 34px;width:34px;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.16);color:#fff;font-size:16px;cursor:pointer;display:grid;place-items:center;padding:0;font-family:inherit}
+.guide .ghead .x:active{background:rgba(255,255,255,.3)}
+.guide .gbody{max-width:720px;margin:0 auto;padding:14px 16px calc(40px + env(safe-area-inset-bottom))}
+.guide details{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:9px;overflow:hidden;box-shadow:0 1px 3px rgba(20,50,30,.05)}
+.guide summary{padding:13px 14px;font-size:14px;font-weight:800;color:var(--green2);cursor:pointer;list-style:none;display:flex;align-items:center;gap:9px}
+.guide summary::-webkit-details-marker{display:none}
+.guide summary::after{content:"▾";margin-left:auto;color:var(--mut);font-size:12px;transition:transform .2s}
+.guide details[open] summary::after{transform:rotate(180deg)}
+.guide details[open] summary{border-bottom:1px solid var(--line)}
+.guide .gc{padding:12px 14px 14px;font-size:13.5px;line-height:1.65}
+.guide .gc p{margin-bottom:9px}
+.guide .gc p:last-child,.guide .gc ul:last-child,.guide .gc ol:last-child{margin-bottom:0}
+.guide .gc ul,.guide .gc ol{margin:0 0 9px 18px}
+.guide .gc li{margin-bottom:5px}
+.guide .gc b{color:var(--green2)}
+.guide .gc code{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:1px 5px;font-size:12px;font-family:ui-monospace,monospace}
+.guide .gc .k{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:1px 7px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.guide .note-box{border-radius:11px;padding:10px 12px;font-size:12.5px;line-height:1.6;margin-bottom:9px}
+.guide .note-box:last-child{margin-bottom:0}
+.guide .warn-box{background:#fff6e0;border:1px solid #f0dca8;color:#7a5200}
+.guide .bad-box{background:rgba(220,58,67,.06);border:1px solid rgba(220,58,67,.35);color:#9b2a31}
+.guide .ok-box{background:rgba(24,135,68,.08);border:1px solid rgba(24,135,68,.3);color:var(--green2)}
+.guide .gc dl{margin:0}
+.guide .gc dt{font-weight:800;font-size:13px;color:var(--txt);margin-top:9px}
+.guide .gc dt:first-child{margin-top:0}
+.guide .gc dd{margin:2px 0 0;color:var(--mut);font-size:12.5px}
+.guide .gfoot{text-align:center;color:var(--mut);font-size:11.5px;padding:8px 4px 0;line-height:1.6}
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#000;color:#fff;padding:11px 20px;border-radius:30px;font-size:13px;z-index:60;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90%;text-align:center}
 .toast.show{opacity:.95}
 /* ---- แผงแก้ไขรายการตรวจ ---- */
@@ -238,6 +273,7 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
     <h1>SafeTrack <span style="color:var(--mut);font-weight:500;font-size:13px">รายงานตรวจอุปกรณ์</span></h1>
     <div class="sub">EF-SF-002 · ระบบบันทึก + ออกรายงาน PowerPoint</div>
   </div>
+  <button class="helpbtn" id="btn-help" aria-label="เปิดคู่มือการใช้งาน"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M9.6 9.3a2.5 2.5 0 114 2c-.9.7-1.6 1.2-1.6 2.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.1" fill="currentColor"/></svg>คู่มือ</button>
 </div>
 
 <div class="stats">
@@ -322,6 +358,235 @@ body{background:var(--bg);color:var(--txt);font-family:"Sukhumvit Set","Noto San
     <div class="row"><div class="opt info warn" id="tpl-warn" hidden></div></div>
     <div id="tpl-body"></div>
     <div class="row" id="tpl-foot"></div>
+  </div>
+</div>
+
+<!-- ===== คู่มือการใช้งานในตัวแอป (เปิดจากปุ่ม "คู่มือ" มุมขวาของหัวแอป) =====
+     ฝังไว้ในไฟล์เดียวกันเพราะผู้ใช้เปิดคู่มือตอนยืนอยู่หน้าอุปกรณ์ ซึ่งมักไม่มีสัญญาณ -->
+<div class="guide" id="guide" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+  <div class="ghead">
+    <h2 id="guide-title">คู่มือการใช้งาน<span class="gsub">SafeTrack · EF-SF-002 · 28 หมวด รวม 195 จุด</span></h2>
+    <button class="x" id="guide-close" aria-label="ปิดคู่มือ">✕</button>
+  </div>
+  <div class="gbody">
+
+    <details open>
+      <summary>① เริ่มต้นใน 1 นาที</summary>
+      <div class="gc">
+        <ol>
+          <li>เปิดแอปด้วย <b>Safari</b> (iPhone) หรือ <b>Chrome</b> (Android)</li>
+          <li>แต่ละจุด: กด <span class="k">📷 ถ่าย</span> แล้วกด <span class="k">✓ ปกติ</span> หรือ <span class="k">✕ ไม่ปกติ</span></li>
+          <li>ถ้า "ไม่ปกติ" ให้พิมพ์หมายเหตุสั้น ๆ (ข้อความนี้จะไปอยู่ในรายงาน)</li>
+          <li>ตรวจครบแล้วกด <span class="k">ออก PowerPoint</span> แล้วเลือก "ส่งไฟล์" หรือ "ดาวน์โหลด"</li>
+          <li>ปิดงานด้วยเมนู <span class="k">⋯</span> → <b>สำรองข้อมูล</b> ทุกครั้ง</li>
+        </ol>
+        <div class="note-box warn-box">กติกาสำคัญ 3 ข้อ<br>
+          1) ข้อมูลเก็บอยู่<b>ในเครื่องนี้เท่านั้น</b> ไม่มีเซิร์ฟเวอร์ ไม่มีการซิงก์<br>
+          2) <b>สำรองข้อมูลเป็นนิสัย</b> — ไฟล์สำรอง 1 ไฟล์ = ผลตรวจ + รูปทั้งหมด<br>
+          3) <b>เปิดด้วยเบราว์เซอร์จริง</b> ไม่ใช่เบราว์เซอร์ในแอป LINE / CPF Connext
+        </div>
+      </div>
+    </details>
+
+    <details>
+      <summary>② เปิดแอปอย่างไรให้ข้อมูลไม่หาย</summary>
+      <div class="gc">
+        <ul>
+          <li>เปิดจากลิงก์ในแชท ให้กดเมนูแล้วเลือก <b>"เปิดในเบราว์เซอร์"</b> ก่อนเริ่มตรวจ</li>
+          <li>ใช้ <b>เครื่องเดียว เบราว์เซอร์เดียว</b> ตลอดรอบการตรวจ (ข้อมูลไม่ข้ามเครื่องเอง)</li>
+          <li>เพิ่มลงหน้าจอโฮม หรือ Bookmark ไว้ จะได้ไม่ต้องรื้อหาลิงก์ในแชท</li>
+          <li><b>ห้ามล้างประวัติ/ล้างข้อมูลเว็บไซต์</b> ระหว่างรอบการตรวจ — เป็นสาเหตุอันดับ 1 ที่ข้อมูลหาย</li>
+        </ul>
+        <div class="note-box ok-box"><b>เรื่องสัญญาณ:</b> เมื่อหน้าเว็บเปิดขึ้นมาแล้ว ใช้งานได้ครบโดยไม่ต้องมีเน็ต —
+          บันทึกผล ใส่รูป ออก PowerPoint และสำรองข้อมูล ทำได้ขณะเดินในโรงงาน
+          แต่ระหว่างที่ไม่มีสัญญาณ <b>อย่ากดรีเฟรชหรือปิดแท็บ</b> เพราะการโหลดหน้าใหม่ยังต้องใช้เน็ต
+          (ข้อมูลที่บันทึกแล้วไม่หาย แต่จะเปิดแอปไม่ได้จนกว่าจะมีสัญญาณ)</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>③ ตรวจ 1 จุด ทำอะไรบ้าง</summary>
+      <div class="gc">
+        <dl>
+          <dt>1. ใส่รูป</dt>
+          <dd>กด <span class="k">📷 ถ่าย</span> เพื่อถ่ายใหม่ หรือ <span class="k">📁 เลือกรูป</span> เพื่อเลือกจากคลังภาพ
+            (แตะช่องรูปว่าง ๆ ก็เท่ากับเลือกรูป) รูปจะถูกย่อและแปลงเป็น JPEG ให้อัตโนมัติ
+            รูปแนวตั้งไม่หมุนเอง</dd>
+          <dt>2. กดผลตรวจ</dt>
+          <dd><span class="k">✓ ปกติ</span> หรือ <span class="k">✕ ไม่ปกติ</span> — <b>กดปุ่มเดิมซ้ำคือยกเลิกผล</b>
+            กลับไปเป็น "รอตรวจ" (ใช้ตอนกดผิด)</dd>
+          <dt>3. พิมพ์หมายเหตุ</dt>
+          <dd>จำเป็นเมื่อ "ไม่ปกติ" เพราะข้อความจะไปอยู่ในช่อง <b>"อธิบายสภาพที่ไม่ปกติ"</b> ของรายงาน
+            เขียนสั้น ๆ ตรงประเด็น เช่น <code>เข็มเกจตกโซนแดง</code>, <code>หลอดไม่ติด</code></dd>
+        </dl>
+        <p style="margin-top:10px"><b>Auto Next</b> (เปิดไว้เป็นค่าเริ่มต้น): พอกดผลตรวจ หน้าจอจะเลื่อนไปจุดถัดไปให้เอง
+          และกรอบเขียวจะกระพริบที่การ์ดใหม่ ปิดได้ในเมนู <span class="k">⋯</span></p>
+        <p><b>ดูรูปใหญ่:</b> แตะรูปที่มีอยู่แล้ว แตะอีกครั้งเพื่อปิด · <b>ลบรูป:</b> กด <span class="k">✕</span> ข้างปุ่มถ่ายรูป</p>
+        <div class="note-box ok-box">ทุกอย่างบันทึกทันที <b>ไม่มีปุ่ม "บันทึก"</b> และไม่ต้องกดอะไรก่อนปิดแอป</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>④ ค้นหา ตัวกรอง และการยุบหมวด</summary>
+      <div class="gc">
+        <ul>
+          <li><b>หาอุปกรณ์ตัวหนึ่ง</b> — พิมพ์รหัส ตำแหน่ง หรือประเภทลงช่องค้นหา เช่น <code>A-031</code>, <code>หอพัก</code>, <code>ไฟฉุกเฉิน</code></li>
+          <li><b>ดูว่าเหลือจุดไหน</b> — แตะช่อง <span class="k">ยังไม่ตรวจ</span> ด้านบน (ครบแล้วจะขึ้น "ตรวจครบทุกจุดแล้ว 🎉")</li>
+          <li><b>ไล่ดูจุดที่ไม่ปกติ</b> ก่อนออกรายงาน — แตะช่อง <span class="k">ไม่ปกติ</span></li>
+          <li><b>เลิกกรอง</b> — แตะช่องเดิมซ้ำ หรือแตะช่อง <span class="k">ทั้งหมด</span></li>
+          <li><b>ย่อรายการ</b> — แตะหัวหมวดเพื่อยุบ/ขยาย หรือเมนู <span class="k">⋯</span> → ยุบ/ขยายทุกหมวด</li>
+        </ul>
+        <p>ตัวกรอง คำค้น และหมวดที่ยุบไว้จะถูกจำไว้เมื่อเปิดครั้งถัดไป — ถ้าเปิดมาแล้วรายการดูน้อยผิดปกติ
+          ให้ดูว่ามีตัวกรองค้างอยู่หรือเปล่า</p>
+        <div class="note-box ok-box">ตัวกรองมีผลกับ<b>หน้าจอเท่านั้น</b> ไม่มีผลกับรายงาน — ออก PowerPoint ได้ทุกจุดเสมอ</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>⑤ ออกรายงาน PowerPoint</summary>
+      <div class="gc">
+        <p>กดปุ่มส้ม <span class="k">ออก PowerPoint</span> ด้านล่าง แล้วรอ — ปุ่มจะบอกความคืบหน้า
+          (<code>กำลังสร้าง… 120/195</code>) <b>ห้ามปิดหน้าจอระหว่างนี้</b></p>
+        <p>ไฟล์ที่ได้ชื่อ <code>รายงานอุปกรณ์ฉุกเฉิน-ปปปป-ดด-วว.pptx</code> ประกอบด้วย</p>
+        <ol>
+          <li><b>สไลด์แรก — ตารางสรุป</b> 1 บรรทัดต่อ 1 ประเภทอุปกรณ์:
+            อุปกรณ์ที่ตรวจ / จำนวนที่มี / ปกติ / ไม่ปกติ / อธิบายสภาพที่ไม่ปกติ
+            (ช่องขวาสุดคือหมายเหตุของจุดที่กด "ไม่ปกติ")</li>
+          <li><b>สไลด์รูปรายจุด</b> หมวดละชุด สไลด์ละ 14 รูป ใต้รูปเป็นลำดับ + รหัส + ตำแหน่ง
+            จุดที่ยังไม่มีรูปจะเป็นกรอบเทาเขียนว่า <code>(ใส่รูปภาพ)</code></li>
+          <li><b>เลขหน้า</b> มุมขวาล่างทุกสไลด์</li>
+        </ol>
+        <p>เสร็จแล้วจะขึ้นแผง <b>"ไฟล์พร้อมแล้ว"</b> ให้เลือก
+          <span class="k">ส่งไฟล์</span> (เข้า LINE / อีเมล / บันทึกลง Files) หรือ
+          <span class="k">ดาวน์โหลด</span> (ลงโฟลเดอร์ดาวน์โหลด)</p>
+        <div class="note-box warn-box">ถ้าขึ้นว่า <b>ส่งไฟล์ไม่สำเร็จ ให้กด "ดาวน์โหลด" ในแผงเดิม</b> —
+          ไฟล์ยังอยู่ ไม่ต้องสร้างใหม่ แต่ถ้าเผลอปิดแผงไปแล้วต้องกดสร้างใหม่</div>
+        <p style="margin-top:9px">ตัวเลือก <b>"เลือกออกเฉพาะจุดที่มีรูป"</b> ในเมนู <span class="k">⋯</span>
+          จะตัดจุดที่ยังไม่มีรูปออกจากรายงาน เหมาะกับการส่งรายงานระหว่างทาง</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>⑥ สำรองข้อมูล / กู้คืนข้อมูล ⭐</summary>
+      <div class="gc">
+        <p><b>เรื่องสำคัญที่สุดในคู่มือนี้</b> — ข้อมูลอยู่ในเครื่องเท่านั้น ไฟล์สำรองคือสำเนาชุดเดียวที่มี</p>
+        <p><b>สำรองข้อมูล:</b> เมนู <span class="k">⋯</span> → สำรองข้อมูล → รอปุ่มนับ → แผง "ไฟล์พร้อมแล้ว" → ส่ง/ดาวน์โหลด<br>
+          ได้ไฟล์ <code>safetrack-backup-ปปปป-ดด-วว.zip</code> ข้างในมีผลตรวจ หมายเหตุ และรูปทั้งหมด
+          เก็บไว้ที่ที่หายยาก เช่น อีเมลตัวเอง OneDrive หรือ Google Drive</p>
+        <p><b>ควรสำรองเมื่อ</b></p>
+        <ul>
+          <li>ปิดงานประจำวันทุกครั้งที่ตรวจเสร็จ</li>
+          <li>ก่อนกด "กู้คืนข้อมูล" หรือ "ล้างข้อมูลทั้งหมด"</li>
+          <li>ก่อนเปลี่ยนเครื่อง / ล้างเครื่อง / อัปเดตระบบเครื่อง</li>
+          <li>ทันทีที่เห็นแถบเตือนสีเหลืองด้านบน</li>
+        </ul>
+        <p><b>กู้คืนข้อมูล:</b> เมนู <span class="k">⋯</span> → กู้คืนข้อมูล → เลือกไฟล์ <code>.zip</code> → ยืนยัน → รอจนเสร็จ</p>
+        <div class="note-box bad-box">⚠️ <b>การกู้คืนเขียนทับข้อมูลในเครื่องทั้งหมด</b> ของเดิมที่ยังไม่ได้สำรองจะหายถาวร
+          ถ้าไฟล์เสียหรือไม่ใช่ของ SafeTrack แอปจะฟ้องและไม่แตะข้อมูลเดิม —
+          เห็นข้อความ "กู้คืนข้อมูลแล้ว" เท่านั้นถือว่าสำเร็จ</div>
+        <p style="margin-top:9px">ไฟล์สำรองรุ่นเก่าที่เป็น <code>.json</code> ยังกู้คืนได้ปกติ</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>⑦ เมนู ⋯ ทุกปุ่มทำอะไร</summary>
+      <div class="gc">
+        <dl>
+          <dt>เลื่อนไปจุดถัดไปอัตโนมัติ (Auto Next)</dt>
+          <dd>เลื่อนหน้าจอไปจุดถัดไปหลังกดผลตรวจ (ค่าเริ่มต้น: เปิด)</dd>
+          <dt>เลือกออกเฉพาะจุดที่มีรูป</dt>
+          <dd>ให้รายงานตัดจุดที่ยังไม่มีรูปออก (ค่าเริ่มต้น: ปิด)</dd>
+          <dt>ยุบ / ขยายทุกหมวด</dt>
+          <dd>ยุบทุกหมวดพร้อมกัน ถ้ายุบอยู่แล้วทั้งหมดจะขยายทั้งหมด</dd>
+          <dt>สำรองข้อมูล / กู้คืนข้อมูล</dt>
+          <dd>ดูหัวข้อ ⑥ — การกู้คืนเขียนทับของเดิมทั้งหมด</dd>
+          <dt>ล้างรูปกำพร้า (n รูป)</dt>
+          <dd>โผล่เฉพาะเมื่อมีรูปค้างจากรายการจุดตรวจรุ่นก่อน ลบได้เพื่อคืนพื้นที่ — ไม่แน่ใจให้สำรองข้อมูลก่อน</dd>
+          <dt>ล้างข้อมูลทั้งหมด (ปุ่มแดง)</dt>
+          <dd>ลบผลตรวจและรูปทุกอย่างในเครื่อง ใช้ตอนเริ่มรอบตรวจใหม่ — <b>สำรองข้อมูลก่อนเสมอ</b></dd>
+          <dt>บรรทัด "พื้นที่เก็บข้อมูล: …"</dt>
+          <dd>บอกว่าใช้พื้นที่ไปเท่าไรจากโควตา และมีรูปกี่ใบ เกิน 80% จะเป็นสีเตือน</dd>
+        </dl>
+      </div>
+    </details>
+
+    <details>
+      <summary>⑧ แถบเตือนด้านบนแปลว่าอะไร</summary>
+      <div class="gc">
+        <dl>
+          <dt>⚠️ ตัวเปิดนี้ไม่อนุญาตให้บันทึกถาวร</dt>
+          <dd>กำลังเปิดในเบราว์เซอร์ที่บล็อกการบันทึก (มักเป็นในแอป LINE/Connext) →
+            สำรองข้อมูลทันที แล้วย้ายไปเปิดด้วย Safari/Chrome</dd>
+          <dt>⚠️ เบราว์เซอร์นี้เก็บรูปภาพถาวรไม่ได้</dt>
+          <dd>ผลตรวจเซฟได้ แต่รูปจะหายเมื่อปิดหน้า → สำรองข้อมูลก่อนปิด แล้วเปลี่ยนเบราว์เซอร์</dd>
+          <dt>⚠️ บันทึกลงเครื่องไม่สำเร็จ (พื้นที่อาจเต็ม)</dt>
+          <dd>เครื่องเต็ม เซฟล่าสุดไม่สำเร็จ → สำรองข้อมูลทันที แล้วเคลียร์พื้นที่เครื่อง</dd>
+          <dt>ℹ️ เบราว์เซอร์อาจลบข้อมูลนี้เองหากไม่ได้เปิดแอปนานหลายวัน</dt>
+          <dd>คำเตือนปกติ ไม่ใช่ข้อผิดพลาด → สำรองข้อมูลหลังตรวจเสร็จทุกครั้ง</dd>
+        </dl>
+        <div class="note-box bad-box" style="margin-top:10px">ถ้ามี<b>แถบสีแดงพร้อมข้อความภาษาอังกฤษ</b>
+          (JS ERROR / PROMISE ERROR) ที่ขอบบนสุด = แอปมีข้อผิดพลาด
+          ให้ถ่ายภาพหน้าจอเก็บข้อความไว้ทั้งหมด แล้วส่งให้ผู้ดูแลแอป</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>⑨ ปัญหาที่พบบ่อย</summary>
+      <div class="gc">
+        <dl>
+          <dt>เปิดมาแล้วรายการว่าง / ตัวเลขเป็น 0</dt>
+          <dd>แอปจะขึ้นข้อความวินิจฉัยให้เอง ลองรีเฟรชเมื่อมีสัญญาณ ถ้ายังไม่หายให้ส่งข้อความนั้นให้ผู้ดูแล</dd>
+          <dt>กดดาวน์โหลดแล้วไม่ได้ไฟล์</dt>
+          <dd>มักเกิดในเบราว์เซอร์ในแอปแชท → ใช้ปุ่ม "ส่งไฟล์" แทน หรือย้ายไปเปิดด้วย Safari/Chrome</dd>
+          <dt>"ยกเลิกการส่ง — ไฟล์ยังอยู่ เลือกใหม่ได้"</dt>
+          <dd>ไม่ใช่ข้อผิดพลาด แค่ปิดแผงแชร์ไป กดส่งหรือดาวน์โหลดใหม่ได้เลย</dd>
+          <dt>ผลตรวจหาย / รูปหาย</dt>
+          <dd>เช็คตามลำดับ: มีตัวกรองค้างอยู่ไหม → เปิดเบราว์เซอร์ตัวเดิมหรือเปล่า → มีใครล้างข้อมูลเบราว์เซอร์ไหม
+            ถ้าหายจริงให้กู้คืนจากไฟล์สำรองล่าสุด</dd>
+          <dt>พื้นที่ใกล้เต็ม / เซฟรูปไม่ได้</dt>
+          <dd>สำรองข้อมูลออกก่อน แล้วลบไฟล์อื่นในเครื่องให้ว่าง ถ้าเป็นรอบที่ปิดงานแล้วให้สำรองเก็บไว้
+            แล้ว "ล้างข้อมูลทั้งหมด" เพื่อเริ่มรอบใหม่</dd>
+          <dt>รูปในรายงานหมุนผิดด้าน</dt>
+          <dd>แอปแก้การหมุนให้ตอนใส่รูปแล้ว ถ้ายังเจอ ให้ลบรูปนั้นแล้วใส่ใหม่</dd>
+          <dt>กดออก PowerPoint แล้วค้างนาน</dt>
+          <dd>ปกติถ้ามีรูปหลายร้อยใบ ดูว่าตัวเลขบนปุ่มขยับอยู่ไหม ระหว่างนี้อย่าสลับแอปทิ้งไว้นาน</dd>
+        </dl>
+      </div>
+    </details>
+
+    <details>
+      <summary>⑩ ส่งมอบงานให้ผู้รับช่วง</summary>
+      <div class="gc">
+        <ul>
+          <li><b>ปิดรอบข้อมูลให้เรียบร้อย</b> — ตรวจให้ครบ (ใช้ตัวกรอง "ยังไม่ตรวจ" เช็ค) และเก็บรายงาน PowerPoint รอบล่าสุดไว้</li>
+          <li><b>สำรองข้อมูล</b> แล้วส่งไฟล์ <code>.zip</code> ให้ผู้รับช่วง + เก็บสำเนาไว้อีกที่</li>
+          <li><b>ส่งลิงก์แอป</b> ที่ใช้อยู่จริง พร้อมย้ำให้เปิดด้วย Safari/Chrome และ Bookmark ไว้</li>
+          <li><b>ให้ผู้รับช่วงลองกู้คืนบนเครื่องตัวเอง</b> แล้วเทียบตัวเลขสถิติ 4 ช่องกับเครื่องเดิม —
+            นี่คือขั้นที่ยืนยันว่าส่งมอบสำเร็จจริง</li>
+          <li><b>สอนใช้งาน 5 นาที</b> ตามหัวข้อ ③ ⑤ ⑥ และย้ำกติกา 3 ข้อในหัวข้อ ①</li>
+          <li><b>บอกว่าใครดูแลตัวแอป</b> — การแก้รายการจุดตรวจ (เพิ่ม/ลด/เปลี่ยนรหัส-ตำแหน่ง) ต้องให้ผู้ดูแลโค้ดทำ
+            และต้องสำรองข้อมูลก่อนทุกครั้ง</li>
+        </ul>
+        <div class="note-box ok-box">วันแรกของผู้รับช่วง: กู้คืนไฟล์ที่ได้มาลงเครื่องตัวเอง แล้วสำรองออกมาอีกรอบ
+          เพื่อพิสูจน์ว่าทั้งวงจร (กู้คืน → ตรวจ → สำรอง) ใช้ได้บนเครื่องของตัวเองจริง</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>⑪ ข้อจำกัดที่ต้องรู้</summary>
+      <div class="gc">
+        <ul>
+          <li><b>ไม่มีเซิร์ฟเวอร์ ไม่มีบัญชีผู้ใช้ ไม่มีการซิงก์</b> — 2 เครื่องที่เปิดแอปเดียวกันคือ 2 ชุดข้อมูลแยกกัน
+            รวมข้อมูลได้ทางเดียวคือสำรอง/กู้คืน (และการกู้คืนคือเขียนทับ ไม่ใช่รวม)</li>
+          <li><b>ไม่มีถังขยะ / ไม่มีเลิกทำ</b> — ลบรูปหรือล้างข้อมูลแล้วคือหาย กู้ได้จากไฟล์สำรองเท่านั้น</li>
+          <li><b>รายการจุดตรวจกำหนดไว้ในตัวแอป</b> เพิ่ม/ลบจุดจากหน้าจอไม่ได้</li>
+          <li>เบราว์เซอร์อาจลบข้อมูลเองถ้าไม่ได้เปิดนานหลายวันหรือพื้นที่เครื่องเต็ม —
+            แอปขอยกเว้นให้แล้วแต่ไม่รับประกัน <b>ไฟล์สำรองคือสิ่งเดียวที่รับประกันได้</b></li>
+        </ul>
+      </div>
+    </details>
+
+    <div class="gfoot">SafeTrack · EF-SF-002<br>ปิดคู่มือด้วยปุ่ม ✕ มุมขวาบน</div>
   </div>
 </div>
 
@@ -1019,6 +1284,29 @@ totop.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 const sheet=document.getElementById('sheet');
 document.getElementById('btn-more').onclick=()=>{sheet.classList.add('show');refreshStorageInfo();};
 document.getElementById('opt-close').onclick=()=>sheet.classList.remove('show');
+
+// ---- คู่มือการใช้งาน (เปิดจากปุ่มมุมขวาของหัวแอป) ----
+// เก็บ overflow เดิมไว้คืนตอนปิด ไม่งั้นถ้าเปิด/ปิดหลายรอบจะทับค่าที่หน้าอื่นตั้งไว้
+const guideEl=document.getElementById('guide');
+let guideScrollY=0;
+function openGuide(){
+  sheet.classList.remove('show');
+  guideScrollY=window.scrollY;
+  guideEl.classList.add('show');
+  guideEl.scrollTop=0;
+  document.body.style.overflow='hidden';
+  document.getElementById('guide-close').focus();
+}
+function closeGuide(){
+  guideEl.classList.remove('show');
+  document.body.style.overflow='';
+  window.scrollTo(0,guideScrollY);   // บางเบราว์เซอร์รีเซ็ตตำแหน่งเลื่อนตอนปลด overflow
+}
+document.getElementById('btn-help').onclick=openGuide;
+document.getElementById('guide-close').onclick=closeGuide;
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'&&guideEl.classList.contains('show'))closeGuide();
+});
 
 // ---- ปุ่มของแผง "ไฟล์พร้อมแล้ว" — สองทางแยกกัน ผู้ใช้เลือกเอง ----
 const filesheet=document.getElementById('filesheet');
